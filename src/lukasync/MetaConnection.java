@@ -1,18 +1,26 @@
 package lukasync;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 public class MetaConnection {
-	private String type, address, dbName, username, password;
+	private int id;
+	private String type, address, dbName, username, password, lastUpdated;
 
-	public MetaConnection(String type, String address, String dbName, String username, String password) {
+	public MetaConnection(int id, String type, String address, String dbName, String username, String password, String lastUpdated) {
+		this.id = id;
 		this.type = type;
 		this.address = address;
 		this.dbName = dbName;
 		this.username = username;
-		this.password = password;		
+		this.password = password;
+		this.lastUpdated = lastUpdated;
 	}
 	
 	public Connection getConnection() {
@@ -26,6 +34,22 @@ public class MetaConnection {
 			e.printStackTrace();
 		}
         return conn;
+	}
+	
+	public void updateTime(String time) {
+		File config = new File(Lukasync.CONF);
+		try {
+			List<String> configArray = FileUtils.readLines(config);
+			StringBuilder configString = new StringBuilder();
+			for(String line:configArray) {
+				if(line.startsWith(id+","))
+					line = line.substring(0,line.lastIndexOf(",")+1).concat(time);
+				configString.append(line+"\n");
+			}
+			FileUtils.writeStringToFile(config,configString.toString());
+		} catch (IOException e) {
+			System.err.println("Couldn't set an updated time for ID: " + id + " in the config file");
+		}
 	}
 	
 	public String getAddress() {
@@ -42,5 +66,9 @@ public class MetaConnection {
 	
 	public String getDbName() {
 		return dbName;
+	}
+	
+	public String getLastUpdated() {
+		return lastUpdated;
 	}
 }

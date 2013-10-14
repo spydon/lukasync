@@ -79,9 +79,9 @@ public class Lukasync {
             while(line != null) {
             	if(!line.equals("") && !line.startsWith("//")) {
 	            	String[] details = line.split(",");
-	            	if(details.length < 5)
-	            		throw new IllegalArgumentException("Needs to be 5 arguments per line.");
-	            	connList.add(new MetaConnection(details[0], details[1], details[2], details[3], details[4]));
+	            	if(details.length < 7)
+	            		throw new IllegalArgumentException("Needs to be 7 arguments per line.");
+	            	connList.add(new MetaConnection(Integer.parseInt(details[0]), details[1], details[2], details[3], details[4], details[5], details[6]));
             	}
 	            line = reader.readLine();
             }
@@ -108,7 +108,7 @@ public class Lukasync {
 		System.out.println("Starting to sync, will sync every " + DELAY/1000/60 + " minutes");
 		final Rest rest = new Rest(connList.get(0));
 		connList.remove(0);
-		rest.query("Accounts", "");
+		rest.query("Contacts", "");
 		for(final MetaConnection conn:connList) {
 			new Thread() {
 		    	public void run() {

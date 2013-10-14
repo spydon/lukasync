@@ -8,7 +8,7 @@ public class Synchronizer {
 		this.remote = remote;
 		this.local = local;
 		POS pos = new POS(remote);
-		pos.query();
+		pos.getContacts();
 		try {
 			System.out.println("Syncronizing");
 		} catch (Exception e) {
