@@ -66,9 +66,15 @@ public class Lukasync {
 	}
 	
 	public Lukasync() {
-		ArrayList<MetaConnection> connList = new ArrayList<MetaConnection>();
 		System.out.println("\nStarting new Lukasync instance, this is run number " + iteration + " since it last was restarted on " + DATE);
 		iteration++;
+		ArrayList<MetaConnection> connList = fetchConfig();
+		startSync(connList);
+		startTimer();
+	}
+	
+	private ArrayList<MetaConnection> fetchConfig() {
+		ArrayList<MetaConnection> connList = new ArrayList<MetaConnection>();
 		FileInputStream fis = null;
 		BufferedReader reader = null;
 		try {
@@ -95,13 +101,12 @@ public class Lukasync {
             try {
         		reader.close();
         		fis.close();
-        		startSync(connList);
             } catch (NullPointerException | IOException ex) {
             	System.err.println("FATAL: " + ex.getMessage());
         		System.out.println("Will try again in " + DELAY/1000/60 + " minutes");
-        		startTimer();
             }
         }
+		return connList;
 	}
 	
 	private void startSync(ArrayList<MetaConnection> connList) {
