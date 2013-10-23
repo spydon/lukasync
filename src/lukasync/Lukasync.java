@@ -61,6 +61,7 @@ public class Lukasync {
 		System.out.println("    but without any warranty; without even the implied warranty of");
 		System.out.println("    merchantability or fitness for a particular purpose.");
 		System.out.println("    This software was coded by Lukas Klingsbo(lukas.klingsbo@gmail.com)");
+		System.out.println("    and Emilio Nyaray(emilio@nyaray.com)");
 		iteration = 1;
 		new Lukasync();
 	}
@@ -111,17 +112,19 @@ public class Lukasync {
 	
 	private void startSync(ArrayList<MetaConnection> connList) {
 		System.out.println("Starting to sync, will sync every " + DELAY/1000/60 + " minutes");
-		final Rest rest = new Rest(connList.get(0));
-		connList.remove(0);
-		rest.query("Contacts", "");
-		for(final MetaConnection conn:connList) {
-			new Thread() {
-		    	public void run() {
-		    		System.out.println("Syncing " + conn.getAddress() + " with SugarCRM");
-		    		new Synchronizer(conn, rest);
-		    	}
-			}.start();
-		}
+//		final Rest rest = new Rest(connList.get(0));
+//		connList.remove(0);
+//		rest.query("Contacts", "");
+//		for(final MetaConnection conn:connList) {
+//			new Thread() {
+//		    	public void run() {
+//		    		System.out.println("Syncing " + conn.getAddress() + " with Zurmo");
+//		    		new Synchronizer(conn, rest);
+//		    	}
+//			}.start();
+//		}
+		ZurmoClient zurmo = ZurmoClient.build(connList.get(0));
+		zurmo.createNote(1, "super", 5, "BAJSKAKA", new Date());
 		startTimer();
 	}
 	

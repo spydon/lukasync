@@ -3,101 +3,90 @@ package lukasync;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.Header;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Rest {
 	
-	private String sessionId, baseURL, username, password; 
-	
-	public Rest(MetaConnection conn) {
-		this.baseURL = conn.getAddress();
-		this.username = conn.getUsername();
-		this.password = conn.getPassword();
-		this.sessionId = login();
-		System.out.println(sessionId);
-	}
-
-	/**
-	 * This method logs in to the SugarCRM with a POST and returns the session
-	 * id.
-	 * 
-	 * @return {@code String} session id
-	 */
-
-	public String login() {
-		JSONObject jso = new JSONObject();
-		jso.put("user_name", username);
-		jso.put("password", password);
-		jso.put("version","1");
-
-		JSONObject jso2 = new JSONObject();
-		jso2.put("user_auth", jso);
-		jso2.put("application_name", "lukasync");
-		
-		String payload = jso2.toString();
-		System.out.println(payload);
-
-		System.out.println(baseURL
-				+ "?method=login&input_type=JSON&response_type=JSON&rest_data=" + payload);
-		//System.out.println(data);
-		JSONObject jsondata = httpPost(baseURL
-				+ "?method=login&input_type=JSON&response_type=JSON&rest_data=" + payload);
-		String sessionid = jsondata.getString("id");	
-
-		return sessionid;
+	public static JSONObject jsonPost(String urlStr, HashMap<String, String> headers) {
+		return jsonPost(urlStr, headers, null);
 	}
 	
-	public JSONObject query(String module, String query) {
-		JSONObject jso = new JSONObject();
-		jso.put("session", sessionId);
-		jso.put("module_name", module);
-		jso.put("query", query);
-		//jso.put("order_by", "");
-		//jso.put("offset", 0);
-		//jso.put("select_fields", "[\"id\",\"name\"]");
-		//:,"link_name_to_fields_array":[{"name":"contacts","value":["id","email1","name","title","phone_work","description"]}],"max_results":20,"deleted":"FALSE"}method=logout&input_type=JSON&response_type=JSON&rest_data={"session":"iov5a257lk5acsg9l3ll6kuej3"}
-		System.out.println(baseURL);
-		System.out.println(jso.toString());
-		JSONObject jsondata = httpPost(baseURL + "?method=get_entry_list&input_type=JSON&response_type=JSON&rest_data=" + jso.toString());
-		System.out.println(jsondata.toString());
-		return jsondata;
-	}
-
-	public JSONObject httpPost(String urlStr) {
-		String res = null;
+	public static JSONObject jsonPost(String urlStr, HashMap<String, String> headers, JSONObject payload) {
 		try {
-			URL url = new URL(urlStr);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setDoOutput(true);
-			conn.setDoInput(true);
-			conn.setUseCaches(false);
-			conn.setAllowUserInteraction(false);
-			conn.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded");
-
-			if (conn.getResponseCode() != 200) {
-				throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
+			URI uri = new URI(urlStr);
+			HttpPost post = new HttpPost(uri);
+			if(!headers.containsKey("Content-Type"))
+				post.addHeader("Content-Type", "application/json");
+			if(!headers.containsKey("Accept"))
+				post.addHeader("Accept", "application/json");
+			
+			for(String key : headers.keySet())
+				if(!key.equalsIgnoreCase("accept") || !key.equalsIgnoreCase("content-type")) 
+					post.addHeader(key, headers.get(key));
+			if(payload != null) {
+				System.out.println("I HAZ PAYLOAD! " + payload.toString());
+				StringEntity entity = new StringEntity(payload.toString());
+				post.setEntity(entity);
+//				StringWriter writer = new StringWriter();
+//				try {
+//					IOUtils.copy(post.getEntity().getContent(), writer, "UTF-8");
+//				} catch (IllegalStateException | IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				System.out.println(writer.toString());
 			}
-
-			// Buffer the result into a string
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					conn.getInputStream()));
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = rd.readLine()) != null) {
-				sb.append(line);
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpResponse response = client.execute(post);
+//			debugResponse(response);
+			if(response.getStatusLine().getStatusCode() == 200) {
+				StringWriter writer = new StringWriter();
+				IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
+				return new JSONObject(writer.toString());
+			} else {
+				throw new IllegalArgumentException(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
 			}
-			rd.close();
-			conn.disconnect();
-			res = sb.toString();
-
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return new JSONObject(res);
+		
+		return null;
 	}
+	
+	private static void debugResponse(HttpResponse response) {
+		System.out.println("\nDEBUG: ");
+		System.out.println(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+		for(Header header : response.getAllHeaders())
+			System.out.println(header);
+		StringWriter writer = new StringWriter();
+		try {
+			IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
+		} catch (IllegalStateException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(writer.toString());
+	}
+
 }
