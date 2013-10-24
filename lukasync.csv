@@ -1,0 +1,9 @@
+// This is a comment and will not be read my the system
+// The format is: id,type,address,databasename,username,password,lastupdate(0 to do from scratch)
+// Lines can be terminated however you wish.
+// This system was written by Lukas Klingsbo(lukas.klingsbo@gmail.com)
+1,rest,http://theinnercirclevip.com/app/index.php,,super,Daniel1985,0
+//1,rest,http://demo.zurmo.com/demos/stable/app/index.php,,super,super,0
+2,jdbc:sqlserver,203.143.84.21,BBSMain,sa,bbs1955,2013-09-25 15:00:25.417
+//3,jdbc:mysql,127.0.0.1,mindlevel,root,dty213f5l1016,0
+
