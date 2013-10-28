@@ -54,6 +54,14 @@ public class ZurmoClient {
         JSONObject data = new JSONObject();
         data.put("description", description);
         data.put("occurredOnDateTime", date);
+//        JSONObject modelRelations = new JSONObject();
+//        JSONArray contacts = new JSONArray();
+//        JSONObject relation = new JSONObject();
+//        relation.put("action", "add");
+//        relation.put("modelId", contactId);
+//        contacts.put(relation);
+//        modelRelations.put("contacts", contacts);
+//        data.put("modelRelations", modelRelations);
         JSONObject owner = new JSONObject();
         owner.put("id", userId);
         owner.put("username", userName);
@@ -78,7 +86,7 @@ public class ZurmoClient {
         return true;
     }
 
-    private void createNoteRelation(int noteId, int customerId) {
+    private void createNoteRelation(int noteId, int contactId) {
         HashMap<String, String> headers = getDefaultHeaders();
 
         JSONObject data = new JSONObject();
@@ -92,10 +100,11 @@ public class ZurmoClient {
         data.put("modelRelations", modelRelations);
         JSONObject payload = new JSONObject();
         payload.put("data", data);
+        //payload.put("id", customerId);
 
-        String requestURL = baseUrl + "/contacts/contact/api/update/" + customerId;
+        String requestURL = baseUrl + "/contacts/contact/api/update/" + contactId;
 
-        JSONObject response = Rest.jsonPost(requestURL, headers, payload);
+        JSONObject response = Rest.jsonPut(requestURL, headers, payload);
         if (response == null || !response.getString("status").equals("SUCCESS")) {
             if (Lukasync.printDebug) {
                 System.out.println("DEBUG: contact update failed with response:");
@@ -160,23 +169,6 @@ public class ZurmoClient {
         }
         return true;
     }
-
-//    private void createContactRelation(int contactId, int ownerId) {
-//        HashMap<String, String> headers = getDefaultHeaders();
-//        JSONObject payload = new JSONObject();
-//        JSONObject modelRelations = new JSONObject();
-//        JSONArray notes = new JSONArray();
-//        JSONObject relation = new JSONObject();
-//        relation.put("action", "add");
-//        relation.put("modelId", contactId);
-//        notes.put(relation);
-//        modelRelations.put("notes", notes);
-//        payload.put("modelRelations", modelRelations);
-//        JSONObject response = Rest.jsonPost(baseUrl + "/contacts/contact/api/update/" + customerId, headers, payload);
-//        if(response == null || !response.getString("status").equals("SUCCESS")) {
-//            throw new IllegalArgumentException();
-//        }
-//    }
 
     private HashMap<String, String> getDefaultHeaders() {
         HashMap<String, String> headers = new HashMap<String, String>();
