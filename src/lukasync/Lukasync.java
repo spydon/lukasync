@@ -127,12 +127,14 @@ public class Lukasync {
 //			}.start();
 //		}
         ZurmoClient zurmo = ZurmoClient.build(connList.get(0));
-        zurmo.createNote(1, "super", 2, "BAJSKAKA", new Date());
+//        zurmo.createNote(1, "super", 2, "BAJSKAKA", new Date());
+        zurmo.createUser("EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO@e.com", 0, "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "STATE", 1);
         startTimer();
     }
 
     private void startTimer() {
         new Timer().schedule(new TimerTask() {
+            @Override
             public void run() {
                 new Lukasync();
             }
