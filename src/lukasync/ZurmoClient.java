@@ -40,32 +40,38 @@ public class ZurmoClient {
 
             return new ZurmoClient(baseUrl, sessionId, token);
         } else {
-            //TODO
-            throw new IllegalArgumentException();
+            voidResponse(response);
+            // not reachable, but the compiler doesn't realise it.
+            return null;
         }
     }
 
-    public boolean createNote(int userId, String userName, int contactId, String description, Date date2) {
+    public boolean createNote(int userId, int contactId, String description, Date date2) {
         HashMap<String, String> headers = getDefaultHeaders();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String date = sdf.format(date2).toString();
 
-        JSONObject payload = new JSONObject();
+        JSONObject relation = new JSONObject();
+        relation.put("action", "add");
+        relation.put("modelId", contactId);
+        relation.put("modelClassName", "Contact");
+
+        JSONArray contacts = new JSONArray();
+        contacts.put(relation);
+
+        JSONObject modelRelations = new JSONObject();
+        modelRelations.put("activityItems", contacts);
+
+        JSONObject owner = new JSONObject();
+        owner.put("id", userId);
+
         JSONObject data = new JSONObject();
         data.put("description", description);
         data.put("occurredOnDateTime", date);
-//        JSONObject modelRelations = new JSONObject();
-//        JSONArray contacts = new JSONArray();
-//        JSONObject relation = new JSONObject();
-//        relation.put("action", "add");
-//        relation.put("modelId", contactId);
-//        contacts.put(relation);
-//        modelRelations.put("contacts", contacts);
-//        data.put("modelRelations", modelRelations);
-        JSONObject owner = new JSONObject();
-        owner.put("id", userId);
-        owner.put("username", userName);
+        data.put("modelRelations", modelRelations);
         data.put("owner", owner);
+
+        JSONObject payload = new JSONObject();
         payload.put("data", data);
 
         if (Lukasync.printDebug) {
@@ -74,50 +80,37 @@ public class ZurmoClient {
         }
 
         JSONObject response = Rest.jsonPost(baseUrl + "/notes/note/api/create/", headers, payload);
-        if (response == null) {
-            throw new IllegalStateException();
-        } else if (!response.getString("status").equals("SUCCESS")) {
-            throw new IllegalArgumentException(response.toString());
-        } else {
-            JSONObject responseData = response.getJSONObject("data");
-            int noteId = responseData.getInt("id");
-            createNoteRelation(noteId, contactId);
-        }
-        return true;
+        return booleanResponse(response);
     }
 
     private void createNoteRelation(int noteId, int contactId) {
         HashMap<String, String> headers = getDefaultHeaders();
 
-        JSONObject data = new JSONObject();
-        JSONObject modelRelations = new JSONObject();
-        JSONArray notes = new JSONArray();
         JSONObject relation = new JSONObject();
         relation.put("action", "add");
-        relation.put("modelId", noteId);
+        relation.put("modelId", contactId);
+        relation.put("modelClassName", "Contact");
+
+        JSONArray notes = new JSONArray();
         notes.put(relation);
-        modelRelations.put("notes", notes);
+
+        JSONObject modelRelations = new JSONObject();
+        modelRelations.put("activityItems", notes);
+
+        JSONObject data = new JSONObject();
         data.put("modelRelations", modelRelations);
+
         JSONObject payload = new JSONObject();
         payload.put("data", data);
-        //payload.put("id", customerId);
 
-        String requestURL = baseUrl + "/contacts/contact/api/update/" + contactId;
+        String requestURL = baseUrl + "/notes/note/api/update/" + noteId;
 
         JSONObject response = Rest.jsonPut(requestURL, headers, payload);
-        if (response == null || !response.getString("status").equals("SUCCESS")) {
-            if (Lukasync.printDebug) {
-                System.out.println("DEBUG: contact update failed with response:");
-                System.out.println(response.toString());
-            }
-
-            throw new IllegalArgumentException();
-        }
+        voidResponse(response);
     }
 
     public boolean createContact(
             int ownerId,
-            String username,
 
             String firstName,
             String lastName,
@@ -135,7 +128,7 @@ public class ZurmoClient {
     ) {
         //int state,String description,
         HashMap<String, String> headers = getDefaultHeaders();
-        JSONObject payload = new JSONObject();
+
         JSONObject data = new JSONObject();
         data.put("firstName", firstName);
         data.put("lastName", lastName);
@@ -157,19 +150,182 @@ public class ZurmoClient {
 
         JSONObject owner = new JSONObject();
         owner.put("id", ownerId);
-        owner.put("username", username);
         data.put("owner", owner);
 
-
-
+        JSONObject payload = new JSONObject();
         payload.put("data", data);
+
         JSONObject response = Rest.jsonPost(baseUrl + "/contacts/contact/api/create/", headers, payload);
-        if (response == null) {
-            throw new IllegalStateException();
-        } else if (!response.getString("status").equals("SUCCESS")) {
-            throw new IllegalArgumentException(response.toString());
+        return booleanResponse(response);
+    }
+
+    public boolean updateContact(
+            int contactId,
+
+            Integer ownerId,
+
+            String firstName,
+            String lastName,
+            String mobilePhone,
+            String companyName,
+
+            String emailAddress,
+            Boolean optOut,
+
+            String street1,
+            String street2,
+            String city,
+            String postalCode,
+            String country
+    ) {
+        // short circuit if nothing is to be updated
+        if (ownerId == null &&
+                firstName == null &&
+                lastName == null &&
+                mobilePhone == null &&
+                companyName == null &&
+                emailAddress == null &&
+                optOut == null &&
+                street1 == null &&
+                street2 == null &&
+                city == null &&
+                postalCode == null &&
+                country == null) {
+            return false;
         }
-        return true;
+
+        HashMap<String, String> headers = getDefaultHeaders();
+
+        JSONObject data = new JSONObject();
+
+        if (firstName != null) {
+
+            data.put("firstName", firstName);
+
+        }
+
+        if (lastName != null) {
+
+            data.put("lastName", lastName);
+
+        }
+
+        if (mobilePhone != null) {
+
+            data.put("mobilePhone", mobilePhone);
+
+        }
+
+        if (companyName != null) {
+
+            data.put("companyName", companyName);
+
+        }
+
+        updateContactEmailCheck(emailAddress, optOut, data);
+
+        updateContactAddressCheck(street1, street2, city, postalCode, country, data);
+
+        if (ownerId != null) {
+
+            JSONObject owner = new JSONObject();
+            owner.put("id", ownerId);
+            data.put("owner", owner);
+
+        }
+
+        JSONObject payload = new JSONObject();
+        payload.put("data", data);
+
+        JSONObject response = Rest.jsonPut(baseUrl + "/contacts/contact/api/update/" + contactId, headers, payload);
+        return booleanResponse(response);
+    }
+
+    private void updateContactEmailCheck (String emailAddress, Boolean optOut, JSONObject outData) {
+        if (emailAddress != null
+                || optOut != null) {
+
+            JSONObject primaryEmail = new JSONObject();
+
+            if (emailAddress != null) {
+
+                primaryEmail.put("emailAddress", emailAddress);
+
+            }
+
+            if (optOut != null) {
+
+                primaryEmail.put("optOut", optOut);
+
+            }
+
+            outData.put("primaryEmail", primaryEmail);
+        }
+    }
+
+    private void updateContactAddressCheck (String street1,
+                                            String street2,
+                                            String city,
+                                            String postalCode,
+                                            String country,
+                                            JSONObject outData) {
+        if (street1 != null
+                || street2 != null
+                || city != null
+                || postalCode != null
+                || country != null) {
+
+            JSONObject primaryAddress = new JSONObject();
+
+            if (street1 != null) {
+
+                primaryAddress.put("street1", street1);
+
+            }
+
+            if (street2 != null) {
+
+                primaryAddress.put("street2", street2);
+
+            }
+
+            if (city != null) {
+
+                primaryAddress.put("city", city);
+
+            }
+
+            if (postalCode != null) {
+
+                primaryAddress.put("postalCode", postalCode);
+
+            }
+
+            if (country != null) {
+
+                primaryAddress.put("country", country);
+
+            }
+
+            outData.put("primaryAddress", primaryAddress);
+        }
+    }
+
+    public boolean transferContact (int contactId, int ownerId) {
+        HashMap<String, String> headers = getDefaultHeaders();
+
+        JSONObject owner = new JSONObject();
+        owner.put("id", ownerId);
+
+        JSONObject data = new JSONObject();
+        data.put("owner", owner);
+
+        JSONObject payload = new JSONObject();
+        payload.put("data", data);
+
+        JSONObject response = Rest.jsonPut(baseUrl + "/contacts/contact/api/update/" + contactId, headers, payload);
+
+        return booleanResponse(response);
     }
 
     public boolean createUser(
@@ -195,6 +351,8 @@ public class ZurmoClient {
         HashMap<String, String> headers = getDefaultHeaders();
         JSONObject payload = new JSONObject();
         JSONObject data = new JSONObject();
+        data.put("username", username.toLowerCase());
+        data.put("password", password);
         data.put("firstName", firstName);
         data.put("lastName", lastName);
         data.put("mobilePhone", mobilePhone);
@@ -212,18 +370,14 @@ public class ZurmoClient {
         data.put("primaryAddress", primaryAddress);
 
         JSONObject state = new JSONObject();
-        primaryAddress.put("name", stateName);
-        primaryAddress.put("order", order);
+        state.put("name", stateName);
+        state.put("order", order);
         data.put("state",state);
 
         payload.put("data", data);
+
         JSONObject response = Rest.jsonPost(baseUrl + "/users/user/api/create/", headers, payload);
-        if (response == null) {
-            throw new IllegalStateException();
-        } else if (!response.getString("status").equals("SUCCESS")) {
-            throw new IllegalArgumentException(response.toString());
-        }
-        return true;
+        return booleanResponse(response);
     }
 
     private HashMap<String, String> getDefaultHeaders() {
@@ -232,5 +386,27 @@ public class ZurmoClient {
         headers.put("ZURMO-TOKEN", token);
         headers.put("ZURMO-API-REQUEST-TYPE", "REST");
         return headers;
+    }
+
+    private static boolean booleanResponse(JSONObject response) {
+        voidResponse(response);
+
+        return true;
+    }
+
+    private static void voidResponse (JSONObject response) {
+        if (response == null) {
+
+            throw new IllegalStateException();
+
+        } else if (!response.getString("status").equals("SUCCESS")) {
+
+            throw new IllegalArgumentException(
+                    response.getString("message") +
+                            " Errors: " +
+                            response.getJSONObject("errors").toString()
+            );
+
+        }
     }
 }

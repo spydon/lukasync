@@ -24,36 +24,42 @@ public class Lukasync {
         if (args.length > 0) {
             for (int x = 0; x < args.length; x++) {
                 String arg = args[x];
-                if (arg.equals("--help") || arg.equals("-h")) {
-                    System.out.println("Available Parameters:");
-                    System.out.println("\t-h or --help, shows this information");
-                    System.out.println("\t-c or --config filename, sets the CSV-file to read from");
-                    System.out.println("\t-d or --delay X, sets the delay(in seconds) for each update");
-                    System.exit(0);
-                } else if (arg.equals("--config") || arg.equals("-c")) {
-                    if (x + 1 < args.length && !args[x + 1].contains("-")) {
-                        CONF = args[x + 1];
-                        System.out.println("Sets the config file to: " + CONF);
-                        x++;
-                    } else {
-                        System.out.println("Not a valid config file for -c/--config");
-                    }
-                } else if (arg.equals("--delay") || arg.equals("-d")) {
-                    if (x + 1 < args.length && !args[x + 1].contains("-")) {
-                        try {
-                            DELAY = Integer.parseInt(args[x + 1]) * 60 * 1000;
-                            System.out.println("Sets the delay to: " + args[x + 1] + " minutes");
-                        } catch (NumberFormatException nfe) {
-                            System.out.println("Not a valid number for -d/--delay");
-                            System.exit(0);
+                switch (arg) {
+                    case "--help":
+                    case "-h":
+                        System.out.println("Available Parameters:");
+                        System.out.println("\t-h or --help, shows this information");
+                        System.out.println("\t-c or --config filename, sets the CSV-file to read from");
+                        System.out.println("\t-d or --delay X, sets the delay(in seconds) for each update");
+                        System.exit(0);
+                    case "--config":
+                    case "-c":
+                        if (x + 1 < args.length && !args[x + 1].contains("-")) {
+                            CONF = args[x + 1];
+                            System.out.println("Sets the config file to: " + CONF);
+                            x++;
+                        } else {
+                            System.out.println("Not a valid config file for -c/--config");
                         }
-                        x++;
-                    } else {
-                        System.out.println("Not a valid delay for -d/--delay");
-                    }
-                } else {
-                    System.out.println("Faulty parameters!");
-                    System.exit(0);
+                        break;
+                    case "--delay":
+                    case "-d":
+                        if (x + 1 < args.length && !args[x + 1].contains("-")) {
+                            try {
+                                DELAY = Integer.parseInt(args[x + 1]) * 60 * 1000;
+                                System.out.println("Sets the delay to: " + args[x + 1] + " minutes");
+                            } catch (NumberFormatException nfe) {
+                                System.out.println("Not a valid number for -d/--delay");
+                                System.exit(0);
+                            }
+                            x++;
+                        } else {
+                            System.out.println("Not a valid delay for -d/--delay");
+                        }
+                        break;
+                    default:
+                        System.out.println("Faulty parameters!");
+                        System.exit(0);
                 }
             }
         } else {
@@ -115,6 +121,7 @@ public class Lukasync {
 
     private void startSync(ArrayList<MetaConnection> connList) {
         System.out.println("Starting to sync, will sync every " + DELAY / 1000 / 60 + " minutes");
+
 //		final Rest rest = new Rest(connList.get(0));
 //		connList.remove(0);
 //		rest.query("Contacts", "");
@@ -126,10 +133,12 @@ public class Lukasync {
 //		    	}
 //			}.start();
 //		}
+
         ZurmoClient zurmo = ZurmoClient.build(connList.get(0));
-//        zurmo.createNote(1, "super", 2, "BAJSKAKA", new Date());
-        zurmo.createUser("EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO@e.com", 0, "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "STATE", 1);
-        startTimer();
+        //zurmo.createUser("EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO@e.com", 0, "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "STATE", 1);
+        //zurmo.createNote(1, 2, "BAJSKAKA", new Date());
+        //zurmo.transferContact(2, 4);
+        //zurmo.updateContact(2, 1, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     private void startTimer() {
