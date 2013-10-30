@@ -1,19 +1,32 @@
 package lukasync;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import lukasync.client.EvoposClient;
+import lukasync.client.MagentoClient;
+import lukasync.client.ZurmoClient;
+import lukasync.job.EvoposToZurmoJob;
+import lukasync.job.MagentoToZurmoJob;
+import lukasync.job.ZurmoToMagentoJob;
+
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Lukasync {
 
     //public static String CONF = "/usr/local/etc/lukasync.csv";
     public static String CONF = "./lukasync.csv";
+    public static String META = "./times.json";
     public static boolean printDebug = true;
 
     private static int DELAY = 60000;
@@ -78,51 +91,111 @@ public class Lukasync {
     public Lukasync() {
         System.out.println("\nStarting new Lukasync instance, this is run number " + iteration + " since it last was restarted on " + DATE);
         iteration++;
-        ArrayList<MetaConnection> connList = fetchConfig();
-        startSync(connList);
-        startTimer();
+        init();
     }
 
-    private ArrayList<MetaConnection> fetchConfig() {
-        ArrayList<MetaConnection> connList = new ArrayList<MetaConnection>();
-        FileInputStream fis = null;
-        BufferedReader reader = null;
+    private void init() {
         try {
-            System.out.println("Fetching connection details.");
-            fis = new FileInputStream(CONF);
-            reader = new BufferedReader(new InputStreamReader(fis));
-            String line = reader.readLine();
-            while (line != null) {
-                if (!line.equals("") && !line.startsWith("//")) {
-                    String[] details = line.split(",");
-                    if (details.length < 7)
-                        throw new IllegalArgumentException("Needs to be 7 arguments per line.");
-                    connList.add(new MetaConnection(Integer.parseInt(details[0]), details[1], details[2], details[3], details[4], details[5], details[6]));
-                }
-                line = reader.readLine();
-            }
-            if (connList.size() == 0)
-                throw new IllegalArgumentException(CONF + " seems to be empty.");
-        } catch (IllegalArgumentException | IOException ex) {
+            JSONObject conf = fetchConfig();
+            JSONObject meta = fetchTimes();
+            startSync(conf, meta);
+        } catch (JSONException | NullPointerException | IllegalArgumentException | IOException ex) {
             System.err.println("FATAL: " + ex.getMessage());
             System.out.println("Will try again in " + DELAY / 1000 / 60 + " minutes");
-            startTimer();
         } finally {
-            try {
-                reader.close();
-                fis.close();
-            } catch (NullPointerException | IOException ex) {
-                System.err.println("FATAL: " + ex.getMessage());
-                System.out.println("Will try again in " + DELAY / 1000 / 60 + " minutes");
-            }
+            startTimer();
         }
-        return connList;
     }
 
-    private void startSync(ArrayList<MetaConnection> connList) {
+    private JSONObject fetchConfig() throws IOException, IllegalArgumentException, NullPointerException {
+        JSONObject conf = new JSONObject();
+        FileInputStream fis = null;
+        BufferedReader reader = null;
+        System.out.println("Fetching connection details.");
+        fis = new FileInputStream(CONF);
+        reader = new BufferedReader(new InputStreamReader(fis));
+        String line = reader.readLine();
+        while (line != null) {
+            if (!line.equals("") && !line.startsWith("//")) {
+                JSONObject serviceLine = new JSONObject();
+                String[] details = line.split(",");
+                if (details.length != 9) {
+                    reader.close();
+                    fis.close();
+                    throw new IllegalArgumentException("Needs to be 9 arguments per line.");
+                }
+//                serviceLine.put("id", Integer.parseInt(details[0]));
+                serviceLine.put("name", details[1]);
+                serviceLine.put("service", details[2]);
+                serviceLine.put("type", details[3]);
+                serviceLine.put("address", details[4]);
+                serviceLine.put("databasename", details[5]);
+                serviceLine.put("username", details[6]);
+                serviceLine.put("password", details[7]);
+                serviceLine.put("destinations", new JSONArray(details[8].replaceAll("\\.", ",")));
+                conf.put(details[0], serviceLine);
+            }
+            line = reader.readLine();
+        }
+        reader.close();
+        fis.close();
+
+        if (conf.length() == 0)
+            throw new IllegalArgumentException(CONF + " seems to be empty.");
+
+        return conf;
+    }
+
+    private JSONObject fetchTimes() throws JSONException, IOException {
+        return new JSONObject(FileUtils.readFileToString(new File(META)));
+    }
+
+    private void startSync(JSONObject conf, JSONObject meta) {
         System.out.println("Starting to sync, will sync every " + DELAY / 1000 / 60 + " minutes");
 
-//		final Rest rest = new Rest(connList.get(0));
+        for(Object objKey : conf.keySet()) {
+            String key = objKey.toString();
+            JSONObject sourceLine = conf.getJSONObject(key);
+            JSONArray destinations = sourceLine.getJSONArray("destinations");
+            JSONObject jobMeta = meta.getJSONObject(key);
+            switch(sourceLine.getString("service")) {
+            case "zurmo":
+                for(int j = 0; j<destinations.length(); j++) {
+                    JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                    if(destinationLine.get("service").equals("magento")) {
+                        ZurmoClient sourceClient = new ZurmoClient(sourceLine);
+                        MagentoClient destinationClient = new MagentoClient(destinationLine);
+                        new ZurmoToMagentoJob(sourceClient, destinationClient, jobMeta).execute();
+                    }
+                }
+                break;
+            case "evopos":
+                for(int j = 0; j<destinations.length(); j++) {
+                    JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                    if(destinationLine.get("service").equals("zurmo")) {
+                        EvoposClient sourceClient = new EvoposClient(sourceLine);
+                        ZurmoClient destinationClient = new ZurmoClient(destinationLine);
+                        new EvoposToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                    }
+                }
+                break;
+            case "magento":
+                for(int j = 0; j<destinations.length(); j++) {
+                    JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                    if(destinationLine.get("service").equals("zurmo")) {
+                        MagentoClient sourceClient = new MagentoClient(destinationLine);
+                        ZurmoClient destinationClient = new ZurmoClient(sourceLine);
+                        new MagentoToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                    }
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + CONF);
+            }
+            writeMetaToFile(jobMeta);
+        }
+
+        //		final Rest rest = new Rest(connList.get(0));
 //		connList.remove(0);
 //		rest.query("Contacts", "");
 //		for(final MetaConnection conn:connList) {
@@ -134,11 +207,16 @@ public class Lukasync {
 //			}.start();
 //		}
 
-        ZurmoClient zurmo = ZurmoClient.build(connList.get(0));
+//        ZurmoClient zurmo = new ZurmoClient.build(connList.get(0));
         //zurmo.createUser("EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO@e.com", 0, "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "STATE", 1);
         //zurmo.createNote(1, 2, "BAJSKAKA", new Date());
         //zurmo.transferContact(2, 4);
         //zurmo.updateContact(2, 1, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    private void writeMetaToFile(JSONObject updatedMeta) {
+        // TODO Auto-generated method stub
+
     }
 
     private void startTimer() {
