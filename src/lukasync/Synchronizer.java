@@ -1,20 +1,69 @@
 package lukasync;
 
-import lukasync.client.ServiceClient;
+import lukasync.client.EvoposClient;
+import lukasync.client.MagentoClient;
+import lukasync.client.ZurmoClient;
+import lukasync.job.EvoposToZurmoJob;
+import lukasync.job.MagentoToZurmoJob;
+import lukasync.job.ZurmoToMagentoJob;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Synchronizer {
-    private ServiceClient remote;
-    private Rest local;
+    public static void doSync (JSONObject conf, JSONObject meta) {
+        System.out.println("Starting to sync, will sync every " + Lukasync.DELAY / 1000 / 60 + " minutes");
 
-    public Synchronizer(ServiceClient remote, Rest local) {
-//        this.remote = remote;
-//        this.local = local;
-//        POS pos = new POS(remote);
-//        pos.getContacts();
-//        try {
-//            System.out.println("Syncronizing");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        for(Object objKey : conf.keySet()) {
+            String key = objKey.toString();
+            JSONObject sourceLine = conf.getJSONObject(key);
+            JSONArray destinations = sourceLine.getJSONArray("destinations");
+            JSONObject jobMeta = meta.getJSONObject(key);
+
+            switch(sourceLine.getString("service")) {
+                case "zurmo":
+                    for(int j = 0; j<destinations.length(); j++) {
+                        JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                        if(destinationLine.get("service").equals("magento")) {
+                            ZurmoClient sourceClient = new ZurmoClient(sourceLine);
+                            MagentoClient destinationClient = new MagentoClient(destinationLine);
+                            new ZurmoToMagentoJob(sourceClient, destinationClient, jobMeta).execute();
+                        }
+                    }
+                    break;
+
+                case "evopos":
+                    for(int j = 0; j<destinations.length(); j++) {
+                        JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                        if(destinationLine.get("service").equals("zurmo")) {
+                            EvoposClient sourceClient = new EvoposClient(sourceLine);
+                            ZurmoClient destinationClient = new ZurmoClient(destinationLine);
+                            new EvoposToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                        }
+                    }
+                    break;
+
+                case "magento":
+                    for(int j = 0; j<destinations.length(); j++) {
+                        JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
+                        if(destinationLine.get("service").equals("zurmo")) {
+                            MagentoClient sourceClient = new MagentoClient(destinationLine);
+                            ZurmoClient destinationClient = new ZurmoClient(sourceLine);
+                            new MagentoToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + Lukasync.CONF);
+            }
+
+            Lukasync.writeMetaToFile(jobMeta);
+        }
+
+//        ZurmoClient zurmo = new ZurmoClient.build(connList.get(0));
+        //zurmo.createUser("EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "EMILIOOOO@e.com", 0, "EMILIOOOO", "EMILIOOOO", "EMILIOOOO", "STATE", 1);
+        //zurmo.createNote(1, 2, "BAJSKAKA", new Date());
+        //zurmo.transferContact(2, 4);
+        //zurmo.updateContact(2, 1, null, null, null, null, null, null, null, null, null, null, null);
     }
 }

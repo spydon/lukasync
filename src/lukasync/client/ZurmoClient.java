@@ -342,19 +342,26 @@ public class ZurmoClient extends ServiceClient{
             String department,
 
             String emailAddress,
-            int optOut,
 
             String city,
             String postalCode,
-            String country,
-
-            String stateName,
-            int order
-    ) {
-        //int state,String description,
+            String country) {
         HashMap<String, String> headers = getDefaultHeaders();
-        JSONObject payload = new JSONObject();
+
+        JSONObject primaryEmail = new JSONObject();
+        primaryEmail.put("emailAddress", emailAddress);
+        primaryEmail.put("optOut", 0);
+
+        JSONObject primaryAddress = new JSONObject();
+        primaryAddress.put("city", city);
+        primaryAddress.put("postalCode", postalCode);
+        primaryAddress.put("country", country);
+
         JSONObject data = new JSONObject();
+
+        data.put("primaryEmail", primaryEmail);
+        data.put("primaryAddress", primaryAddress);
+
         data.put("username", username.toLowerCase());
         data.put("password", password);
         data.put("firstName", firstName);
@@ -362,22 +369,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("mobilePhone", mobilePhone);
         data.put("department", department);
 
-        JSONObject primaryEmail = new JSONObject();
-        primaryEmail.put("emailAddress", emailAddress);
-        primaryEmail.put("optOut", optOut);
-        data.put("primaryEmail", primaryEmail);
-
-        JSONObject primaryAddress = new JSONObject();
-        primaryAddress.put("city", city);
-        primaryAddress.put("postalCode", postalCode);
-        primaryAddress.put("country", country);
-        data.put("primaryAddress", primaryAddress);
-
-        JSONObject state = new JSONObject();
-        state.put("name", stateName);
-        state.put("order", order);
-        data.put("state",state);
-
+        JSONObject payload = new JSONObject();
         payload.put("data", data);
 
         JSONObject response = Rest.jsonPost(baseUrl + "/users/user/api/create/", headers, payload);
