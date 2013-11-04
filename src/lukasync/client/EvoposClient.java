@@ -26,7 +26,7 @@ public class EvoposClient extends ServiceClient {
                 "",
                 "Contacts_Persons.Modified_Date asc"
                 );
-        this.userQuery = new QueryBuilder("short_name, pass_code, first_name, last_name, mobile, email, home_address, postcode, getdate() as retrieval_time",
+        this.userQuery = new QueryBuilder("short_name, pass_code, first_name, last_name, mobile, email, home_address, postcode, signed_date, LSEmployees.Modified_Date, getdate() as Imported_At",
                 "Operators INNER JOIN LSEmployees ON LSEmployees.operator_id = Operators.ID",
                 "operators.id>0",
                 "",
@@ -46,7 +46,6 @@ public class EvoposClient extends ServiceClient {
     }
 
     private JSONArray getContacts(boolean isNew, String updateTime) {
-        JSONObject result = new JSONObject();
         JSONArray contacts = new JSONArray();
         try {
             Connection conn = getConnection();
@@ -91,8 +90,8 @@ public class EvoposClient extends ServiceClient {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println(new JSONObject(result).toString());
-        return null;
+        System.out.println(contacts);
+        return contacts;
     }
 
     public JSONArray getNewUsers(String updateTime) {
@@ -104,7 +103,6 @@ public class EvoposClient extends ServiceClient {
     }
 
     private JSONArray getUsers(boolean isNew, String updateTime) {
-        JSONObject result = new JSONObject();
         JSONArray contacts = new JSONArray();
         try {
             Connection conn = getConnection();
@@ -119,10 +117,6 @@ public class EvoposClient extends ServiceClient {
             ps = conn.prepareStatement(userQuery.getQuery());
 
             ResultSet rs = ps.executeQuery();
-            if(rs.next()) {
-                result.put("retrievalTime", rs.getString("update_time"));
-                rs.beforeFirst();
-            }
             while (rs.next()) {
                 JSONObject entry = new JSONObject();
                 entry.put("username", rs.getString("short_name"));
@@ -133,17 +127,19 @@ public class EvoposClient extends ServiceClient {
                 entry.put("emailAddress", rs.getString("email"));
                 entry.put("city", rs.getString("home_address"));
                 entry.put("postalCode", rs.getString("postcode"));
+                entry.put("modified_at", rs.getString("Modified_Date"));
+                entry.put("created_at", rs.getString("Date_Signed"));
+                entry.put("imported_at", rs.getString("imported_at"));
                 contacts.put(entry);
             }
-//            updateTime(updateTime);
             rs.close();
             ps.close();
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println(new JSONObject(result).toString());
-        return null;
+        System.out.println(contacts);
+        return contacts;
     }
 
     private Connection getConnection() {
