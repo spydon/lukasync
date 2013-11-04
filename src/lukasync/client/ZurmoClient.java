@@ -127,6 +127,7 @@ public class ZurmoClient extends ServiceClient{
             String street1,
             String street2,
             String city,
+            String state,
             String postalCode,
             String country
     ) {
@@ -148,6 +149,7 @@ public class ZurmoClient extends ServiceClient{
         primaryAddress.put("street1", street1);
         primaryAddress.put("street2", street2);
         primaryAddress.put("city", city);
+        primaryAddress.put("state", state);
         primaryAddress.put("postalCode", postalCode);
         primaryAddress.put("country", country);
         data.put("primaryAddress", primaryAddress);
