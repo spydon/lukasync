@@ -10,14 +10,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Synchronizer {
-    public static void doSync (JSONObject conf, JSONObject meta) {
+    public static void doSync (JSONObject conf) {
         System.out.println("Starting to sync, will sync every " + Lukasync.DELAY / 1000 / 60 + " minutes");
 
         for(Object objKey : conf.keySet()) {
             String key = objKey.toString();
             JSONObject sourceLine = conf.getJSONObject(key);
             JSONArray destinations = sourceLine.getJSONArray("destinations");
-            JSONObject jobMeta = meta.getJSONObject(key);
 
             switch(sourceLine.getString("service")) {
                 case "zurmo":
@@ -26,7 +25,7 @@ public class Synchronizer {
                         if(destinationLine.get("service").equals("magento")) {
                             ZurmoClient sourceClient = new ZurmoClient(sourceLine);
                             MagentoClient destinationClient = new MagentoClient(destinationLine);
-                            new ZurmoToMagentoJob(sourceClient, destinationClient, jobMeta).execute();
+                            new ZurmoToMagentoJob(sourceClient, destinationClient).execute();
                         }
                     }
                     break;
@@ -37,7 +36,7 @@ public class Synchronizer {
                         if(destinationLine.get("service").equals("zurmo")) {
                             EvoposClient sourceClient = new EvoposClient(sourceLine);
                             ZurmoClient destinationClient = new ZurmoClient(destinationLine);
-                            new EvoposToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                            new EvoposToZurmoJob(sourceClient, destinationClient).execute();
                         }
                     }
                     break;
@@ -48,7 +47,7 @@ public class Synchronizer {
                         if(destinationLine.get("service").equals("zurmo")) {
                             MagentoClient sourceClient = new MagentoClient(destinationLine);
                             ZurmoClient destinationClient = new ZurmoClient(sourceLine);
-                            new MagentoToZurmoJob(sourceClient, destinationClient, jobMeta).execute();
+                            new MagentoToZurmoJob(sourceClient, destinationClient).execute();
                         }
                     }
                     break;
@@ -56,8 +55,6 @@ public class Synchronizer {
                 default:
                     throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + Lukasync.CONF);
             }
-
-            Lukasync.writeMetaToFile(jobMeta);
         }
 
 //        ZurmoClient zurmo = new ZurmoClient.build(connList.get(0));

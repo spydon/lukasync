@@ -6,6 +6,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.concurrent.TimeUnit;
 
 public class Lukasync {
@@ -15,7 +19,6 @@ public class Lukasync {
     public static long INITIAL_DELAY = 0;
     public static long DELAY = 60000;
 
-    public static final String META = "./meta.json";
     public static final boolean printDebug = true;
 
 
@@ -95,54 +98,84 @@ public class Lukasync {
                 TimeUnit.MILLISECONDS);
     }
 
-    public static JSONObject fetchConfig() throws IOException, IllegalArgumentException, NullPointerException {
+    public static JSONObject fetchConfig() {
         JSONObject conf = new JSONObject();
-        FileInputStream fis = null;
-        BufferedReader reader = null;
-        System.out.println("Fetching connection details.");
-        fis = new FileInputStream(CONF);
-        reader = new BufferedReader(new InputStreamReader(fis));
-        String line = reader.readLine();
-        while (line != null) {
-            if (!line.equals("") && !line.startsWith("//")) {
-                JSONObject serviceLine = new JSONObject();
-                String[] details = line.split(",");
-                if (details.length != 9) {
-                    reader.close();
-                    fis.close();
-                    throw new IllegalArgumentException("Needs to be 9 arguments per line.");
-                }
 
-//                serviceLine.put("id", Integer.parseInt(details[0]));
-                serviceLine.put("name", details[1]);
-                serviceLine.put("service", details[2]);
-                serviceLine.put("type", details[3]);
-                serviceLine.put("address", details[4]);
-                serviceLine.put("databasename", details[5]);
-                serviceLine.put("username", details[6]);
-                serviceLine.put("password", details[7]);
-                serviceLine.put("destinations", new JSONArray(details[8].replaceAll("\\.", ",")));
-                conf.put(details[0], serviceLine);
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://londonsales.com.au/lukasync",
+                    "lukasync",
+                    "Daniel1985"
+            );
+
+            QueryBuilder serviceQuery = new QueryBuilder(
+                    "id, name, type, connection_type," +
+                            "address, database_name, username, password",
+                    "service",
+                    "",
+                    "",
+                    ""
+            );
+
+            String serviceQueryString = serviceQuery.getQuery();
+            PreparedStatement servicesStatement = conn.prepareStatement(serviceQueryString);
+            ResultSet servicesResult = servicesStatement.executeQuery();
+            while (servicesResult.next()) {
+                JSONObject service = new JSONObject();
+
+                service.put("name", servicesResult.getString("name"));
+                service.put("type", servicesResult.getString("type"));
+                service.put("connectionType", servicesResult.getString("connection_type"));
+                service.put("address", servicesResult.getString("address"));
+                service.put("databaseName", servicesResult.getString("database_name"));
+                service.put("username", servicesResult.getString("username"));
+                service.put("password", servicesResult.getString("password"));
+
+                conf.putOnce("" + servicesResult.getInt("id"), service);
             }
 
-            line = reader.readLine();
+            servicesResult.close();
+            servicesStatement.close();
+
+            QueryBuilder serviceFlowsQuery = new QueryBuilder(
+                    "source, destination",
+                    "service_flows",
+                    "",
+                    "",
+                    ""
+            );
+
+            String serviceFlowsQueryString = serviceFlowsQuery.getQuery();
+            PreparedStatement serviceFlowsStatement = conn.prepareStatement(serviceFlowsQueryString);
+
+            ResultSet serviceFlowsResult = serviceFlowsStatement.executeQuery();
+            while (serviceFlowsResult.next()) {
+                String sourceServiceKey = "" + serviceFlowsResult.getInt("source");
+
+                JSONObject service = conf.getJSONObject(sourceServiceKey);
+                JSONArray destinations = null;
+
+                String KEY_DESTINATIONS = "destinations";
+                if (!service.has(KEY_DESTINATIONS)) {
+                    destinations = new JSONArray();
+                    service.put(KEY_DESTINATIONS, destinations);
+                } else {
+                    destinations = service.getJSONArray(KEY_DESTINATIONS);
+                }
+
+                destinations.put("" + serviceFlowsResult.getInt("destination"));
+            }
+
+            serviceFlowsResult.close();
+            serviceFlowsStatement.close();
+
+            conn.close();
+        } catch (Throwable t) {
+            System.err.println("Couldn't fetch configuration due to an error:");
+            t.printStackTrace();
         }
 
-        reader.close();
-        fis.close();
-
-        if (conf.length() == 0)
-            throw new IllegalArgumentException(CONF + " seems to be empty.");
-
+        System.out.println(conf.toString());
         return conf;
-    }
-
-    public static JSONObject fetchMeta () throws JSONException, IOException {
-        return new JSONObject(FileUtils.readFileToString(new File(META)));
-    }
-
-    public static void writeMetaToFile(JSONObject updatedMeta) {
-        // TODO actually write the meta to its destination file
-        throw new IllegalStateException("Don't call me, brah.");
     }
 }

@@ -25,9 +25,8 @@ public class SyncTask implements Runnable {
 
             try {
                 JSONObject conf = Lukasync.fetchConfig();
-                JSONObject meta = Lukasync.fetchMeta();
-                Synchronizer.doSync(conf, meta);
-            } catch (JSONException | NullPointerException | IllegalArgumentException | IOException ex) {
+                Synchronizer.doSync(conf);
+            } catch (JSONException | NullPointerException | IllegalArgumentException ex) {
                 System.err.println("ERROR: " + ex.getMessage());
                 ex.printStackTrace();
             } finally {

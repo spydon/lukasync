@@ -7,8 +7,8 @@ import org.json.JSONObject;
 
 public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
-    public EvoposToZurmoJob(EvoposClient source, ZurmoClient destination, JSONObject jobMeta) {
-        super(source, destination, jobMeta);
+    public EvoposToZurmoJob(EvoposClient source, ZurmoClient destination) {
+        super(source, destination);
     }
 
     @Override

@@ -8,8 +8,8 @@ import org.json.JSONObject;
 
 public class ZurmoToMagentoJob extends Job<ZurmoClient, ServiceClient> {
 
-    public ZurmoToMagentoJob(ZurmoClient source, MagentoClient destination, JSONObject jobMeta) {
-        super(source, destination, jobMeta);
+    public ZurmoToMagentoJob(ZurmoClient source, MagentoClient destination) {
+        super(source, destination);
     }
 
     @Override

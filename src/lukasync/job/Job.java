@@ -7,10 +7,9 @@ public abstract class Job<S,D> {
     protected final D destination;
     protected JSONObject jobMeta;
 
-    protected Job(S source, D destination, JSONObject jobMeta) {
+    protected Job(S source, D destination) {
         this.source = source;
         this.destination = destination;
-        this.jobMeta = jobMeta;
     }
 
     public abstract JSONObject execute();
