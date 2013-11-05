@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ZurmoClient extends ServiceClient{
+    private static String DEFAULT_USER_COUNTRY = "Australia"; // TODO remove this...?
+
     private String sessionId;
     private String token;
     private String baseUrl;
@@ -332,6 +334,21 @@ public class ZurmoClient extends ServiceClient{
         JSONObject response = Rest.jsonPut(baseUrl + "/contacts/contact/api/update/" + contactId, headers, payload);
 
         return booleanResponse(response);
+    }
+
+    public boolean createUser (JSONObject user) {
+        return createUser(
+                user.getString("username"),
+                user.getString("password"),
+                null,
+                user.getString("lastName"),
+                user.getString("mobile"),
+                "SOURCE COMPANY HIEEAAA",
+                user.getString("email"),
+                user.getString("city"),
+                user.getString("postalCode"),
+                DEFAULT_USER_COUNTRY
+        );
     }
 
     public boolean createUser(

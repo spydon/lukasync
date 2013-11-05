@@ -18,11 +18,11 @@ public class Synchronizer {
             JSONObject sourceLine = conf.getJSONObject(key);
             JSONArray destinations = sourceLine.getJSONArray("destinations");
 
-            switch(sourceLine.getString("service")) {
+            switch(sourceLine.getString("type")) {
                 case "zurmo":
                     for(int j = 0; j<destinations.length(); j++) {
                         JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
-                        if(destinationLine.get("service").equals("magento")) {
+                        if(destinationLine.get("type").equals("magento")) {
                             ZurmoClient sourceClient = new ZurmoClient(sourceLine);
                             MagentoClient destinationClient = new MagentoClient(destinationLine);
                             new ZurmoToMagentoJob(sourceClient, destinationClient).execute();
@@ -30,10 +30,10 @@ public class Synchronizer {
                     }
                     break;
 
-                case "evopos":
+                case "evoposhq":
                     for(int j = 0; j<destinations.length(); j++) {
                         JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
-                        if(destinationLine.get("service").equals("zurmo")) {
+                        if(destinationLine.get("type").equals("zurmo")) {
                             EvoposClient sourceClient = new EvoposClient(sourceLine);
                             ZurmoClient destinationClient = new ZurmoClient(destinationLine);
                             new EvoposToZurmoJob(sourceClient, destinationClient).execute();
@@ -44,7 +44,7 @@ public class Synchronizer {
                 case "magento":
                     for(int j = 0; j<destinations.length(); j++) {
                         JSONObject destinationLine = (JSONObject) conf.get("" + destinations.get(j));
-                        if(destinationLine.get("service").equals("zurmo")) {
+                        if(destinationLine.get("type").equals("zurmo")) {
                             MagentoClient sourceClient = new MagentoClient(destinationLine);
                             ZurmoClient destinationClient = new ZurmoClient(sourceLine);
                             new MagentoToZurmoJob(sourceClient, destinationClient).execute();
@@ -53,7 +53,7 @@ public class Synchronizer {
                     break;
 
                 default:
-                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + Lukasync.DB);
+                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("type") + "\nin file " + Lukasync.DB);
             }
         }
 

@@ -26,7 +26,7 @@ public class EvoposClient extends ServiceClient {
                 "",
                 "Contacts_Persons.Modified_Date asc"
                 );
-        this.userQuery = new QueryBuilder("short_name, pass_code, first_name, last_name, mobile, email, home_address, postcode, signed_date, LSEmployees.Modified_Date, getdate() as Imported_At",
+        this.userQuery = new QueryBuilder("short_name, pass_code, first_name, last_name, mobile, email, home_address, postcode, date_signed, LSEmployees.Modified_Date, getdate() as Imported_At",
                 "Operators INNER JOIN LSEmployees ON LSEmployees.operator_id = Operators.ID",
                 "operators.id>0",
                 "",
@@ -90,7 +90,6 @@ public class EvoposClient extends ServiceClient {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println(contacts);
         return contacts;
     }
 
@@ -113,7 +112,8 @@ public class EvoposClient extends ServiceClient {
             else
                 userQuery.setWhere("DATEADD(ss, 5, Date_Signed) < LSEmployees.Modified_Date");
 
-            userQuery.appendWhere("modified_date>" + "'" + updateTime + "'");
+            userQuery.appendWhere("LSEmployees.Modified_Date>" + "" + updateTime + "");
+            System.out.println("getUsers(), userQuery: " + userQuery.getQuery());
             ps = conn.prepareStatement(userQuery.getQuery());
 
             ResultSet rs = ps.executeQuery();
@@ -123,8 +123,8 @@ public class EvoposClient extends ServiceClient {
                 entry.put("password", rs.getString("pass_code"));
                 entry.put("firstName", rs.getString("first_name"));
                 entry.put("lastName", rs.getString("last_name"));
-                entry.put("mobileName", rs.getString("mobile"));
-                entry.put("emailAddress", rs.getString("email"));
+                entry.put("mobile", rs.getString("mobile"));
+                entry.put("email", rs.getString("email"));
                 entry.put("city", rs.getString("home_address"));
                 entry.put("postalCode", rs.getString("postcode"));
                 entry.put("modified_at", rs.getString("Modified_Date"));
@@ -138,15 +138,14 @@ public class EvoposClient extends ServiceClient {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println(contacts);
         return contacts;
     }
 
     private Connection getConnection() {
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection(type + "://" + address + ";user=" + username
-                    + ";password=" + password + ";databaseName=" + dbName + ";");
+            conn = DriverManager.getConnection(connectionType + "://" + address + ";user=" + username
+                    + ";password=" + password + ";databaseName=" + databaseName + ";");
         } catch (SQLException e) {
             System.err.println("ERROR: The connection to " + address +
                     " timed out! \nCheck the internet connection or look for faulty lines in the CSV-file(" + Lukasync.DB + ").");

@@ -7,6 +7,24 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class JSONUtil {
+    public static String prettify (JSONObject json) {
+        return json.toString(4);
+    }
+
+    public static String prettify (JSONArray json) {
+        return json.toString(4);
+    }
+
+    public static void prettyPrint (JSONObject json) {
+        System.out.println(prettify(json));
+    }
+
+    public static void prettyPrint (JSONArray json) {
+        System.out.println(prettify(json));
+    }
+
+
+
     public static String jsonToURLEncoding(JSONObject json) {
         String output = "";
         String[] keys = JSONObject.getNames(json);

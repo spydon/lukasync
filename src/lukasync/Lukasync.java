@@ -145,6 +145,7 @@ public class Lukasync {
             while (servicesResult.next()) {
                 JSONObject service = new JSONObject();
 
+                service.put("id", servicesResult.getInt("id"));
                 service.put("name", servicesResult.getString("name"));
                 service.put("type", servicesResult.getString("type"));
                 service.put("connectionType", servicesResult.getString("connection_type"));
@@ -152,6 +153,7 @@ public class Lukasync {
                 service.put("databaseName", servicesResult.getString("database_name"));
                 service.put("username", servicesResult.getString("username"));
                 service.put("password", servicesResult.getString("password"));
+                service.put("destinations", new JSONArray());
 
                 conf.putOnce("" + servicesResult.getInt("id"), service);
             }
@@ -173,18 +175,9 @@ public class Lukasync {
             ResultSet serviceFlowsResult = serviceFlowsStatement.executeQuery();
             while (serviceFlowsResult.next()) {
                 String sourceServiceKey = "" + serviceFlowsResult.getInt("source");
-
                 JSONObject service = conf.getJSONObject(sourceServiceKey);
-                JSONArray destinations = null;
 
-                String KEY_DESTINATIONS = "destinations";
-                if (!service.has(KEY_DESTINATIONS)) {
-                    destinations = new JSONArray();
-                    service.put(KEY_DESTINATIONS, destinations);
-                } else {
-                    destinations = service.getJSONArray(KEY_DESTINATIONS);
-                }
-
+                JSONArray destinations = service.getJSONArray("destinations");
                 destinations.put("" + serviceFlowsResult.getInt("destination"));
             }
 
@@ -197,7 +190,6 @@ public class Lukasync {
             t.printStackTrace();
         }
 
-        System.out.println(conf.toString());
         return conf;
     }
 }
