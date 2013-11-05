@@ -1,9 +1,14 @@
 package lukasync;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -11,12 +16,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 
 public class Rest {
 
@@ -132,13 +131,6 @@ public class Rest {
 
                 return new JSONObject(result);
             } else {
-                /*
-                StatusLine sl = response.getStatusLine();
-                int sc = sl.getStatusCode();
-                String rp = sl.getReasonPhrase();
-
-                System.out.println("\nDEBUG: ");
-                */
                 StringWriter writer = new StringWriter();
                 IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
                 String result = writer.toString();
@@ -167,6 +159,7 @@ public class Rest {
      * Debug stuff
      */
 
+    @SuppressWarnings("unused")
     private static void debugResponse(HttpResponse response) {
         System.out.println("\nDEBUG: ");
         System.out.println(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
@@ -174,17 +167,6 @@ public class Rest {
         for (Header header : response.getAllHeaders())
             System.out.println(header);
 
-        /*
-        StringWriter writer = new StringWriter();
-        try {
-            IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
-        } catch (IllegalStateException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        System.out.println(writer.toString());
-        */
     }
 
 }

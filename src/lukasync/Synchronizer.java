@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 public class Synchronizer {
     public static void doSync (JSONObject conf) {
-        System.out.println("Starting to sync, will sync every " + Lukasync.DELAY / 1000 / 60 + " minutes");
+        System.out.println("Starting to sync, will sync every " + Lukasync.WAIT / 1000 / 60 + " minutes");
 
         for(Object objKey : conf.keySet()) {
             String key = objKey.toString();
@@ -53,7 +53,7 @@ public class Synchronizer {
                     break;
 
                 default:
-                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + Lukasync.CONF);
+                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("service") + "\nin file " + Lukasync.DB);
             }
         }
 

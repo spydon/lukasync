@@ -15,7 +15,7 @@ public class Scheduler extends ScheduledThreadPoolExecutor {
             public void rejectedExecution (Runnable r, ThreadPoolExecutor executor) {
                 // TODO will this work?
                 ((ScheduledThreadPoolExecutor) executor)
-                        .scheduleWithFixedDelay(r, Lukasync.INITIAL_DELAY, 10000, TimeUnit.MILLISECONDS);
+                        .scheduleWithFixedDelay(r, Lukasync.INITIAL_WAIT, 10000, TimeUnit.MILLISECONDS);
                 //System.err.println("Execution of sync got rejected!");
             }
         });

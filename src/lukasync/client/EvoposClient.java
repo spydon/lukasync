@@ -149,7 +149,7 @@ public class EvoposClient extends ServiceClient {
                     + ";password=" + password + ";databaseName=" + dbName + ";");
         } catch (SQLException e) {
             System.err.println("ERROR: The connection to " + address +
-                    " timed out! \nCheck the internet connection or look for faulty lines in the CSV-file(" + Lukasync.CONF + ").");
+                    " timed out! \nCheck the internet connection or look for faulty lines in the CSV-file(" + Lukasync.DB + ").");
             e.printStackTrace();
         }
         return conn;

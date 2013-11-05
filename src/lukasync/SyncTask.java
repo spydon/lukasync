@@ -1,11 +1,10 @@
 package lukasync;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SyncTask implements Runnable {
     private static int iteration = 0;
@@ -30,7 +29,7 @@ public class SyncTask implements Runnable {
                 System.err.println("ERROR: " + ex.getMessage());
                 ex.printStackTrace();
             } finally {
-                System.out.println("Will try again in " + Lukasync.DELAY / 1000 / 60 + " minutes");
+                System.out.println("Will try again in " + Lukasync.WAIT / 1000 / 60 + " minutes");
             }
         } catch (Exception e) {
             System.err.println("ERROR: SyncTask crashed, stacktrace below:");

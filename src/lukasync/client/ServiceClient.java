@@ -21,41 +21,4 @@ public abstract class ServiceClient {
     }
 
     protected abstract void init();
-
-//    @DEPRECATED
-//    public void updateTime(String time) {
-//        File config = new File(Lukasync.CONF);
-//        try {
-//            List<String> configArray = FileUtils.readLines(config);
-//            StringBuilder configString = new StringBuilder();
-//            for (String line : configArray) {
-//                if (line.startsWith(id + ","))
-//                    line = line.substring(0, line.lastIndexOf(",") + 1).concat(time);
-//                configString.append(line + "\n");
-//            }
-//            FileUtils.writeStringToFile(config, configString.toString());
-//        } catch (IOException e) {
-//            System.err.println("Couldn't set an updated time for ID: " + id + " in the config file");
-//        }
-//    }
-
-//    public String getAddress() {
-//        return address;
-//    }
-//
-//    public String getUsername() {
-//        return username;
-//    }
-//
-//    public String getPassword() {
-//        return password;
-//    }
-//
-//    public String getDbName() {
-//        return dbName;
-//    }
-
-//    public String getLastUpdated() {
-//        return lastUpdated;
-//    }
 }
