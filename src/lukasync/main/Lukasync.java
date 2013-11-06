@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.main;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.concurrent.TimeUnit;
 
+import lukasync.util.QueryBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

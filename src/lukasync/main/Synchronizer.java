@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.main;
 
 import lukasync.client.EvoposClient;
 import lukasync.client.MagentoClient;

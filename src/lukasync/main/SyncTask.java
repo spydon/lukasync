@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.main;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

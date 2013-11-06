@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.main;
 
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;

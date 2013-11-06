@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.util;
 
 import java.io.Serializable;
 

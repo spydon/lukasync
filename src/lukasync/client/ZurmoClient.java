@@ -4,8 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import lukasync.Lukasync;
-import lukasync.Rest;
+import lukasync.main.Lukasync;
+import lukasync.util.Rest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -340,7 +340,7 @@ public class ZurmoClient extends ServiceClient{
         return createUser(
                 user.getString("username"),
                 user.getString("password"),
-                null,
+                user.getString("firstName"),
                 user.getString("lastName"),
                 user.getString("mobile"),
                 "SOURCE COMPANY HIEEAAA",

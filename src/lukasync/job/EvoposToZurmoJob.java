@@ -1,6 +1,6 @@
 package lukasync.job;
 
-import lukasync.JSONUtil;
+import lukasync.util.JSONUtil;
 import lukasync.client.EvoposClient;
 import lukasync.client.ZurmoClient;
 
@@ -30,6 +30,10 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
         JSONArray newUsers = source.getNewUsers("0");
         System.out.println("DEBUG: copyNewUsers():");
         JSONUtil.prettyPrint(newUsers);
+
+        for (int i = 0; i < newUsers.length(); i++) {
+            destination.createUser(newUsers.getJSONObject(i));
+        }
     }
 
    private void copyUpdatedUsers () {

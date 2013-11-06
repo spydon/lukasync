@@ -1,4 +1,4 @@
-package lukasync;
+package lukasync.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
