@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import lukasync.Lukasync;
+import lukasync.util.JSONUtil;
 import lukasync.util.QueryBuilder;
 
 import org.json.JSONArray;
@@ -41,7 +42,6 @@ public class EvoposClient extends ServiceClient {
                 + "Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10",
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_transactions_Lines.gross, soldto_id, Sales_Transactions_Header.modified_date ",
                 "Sales_Transactions_Lines.transaction_no");
-
         this.contactRelationQuery = new QueryBuilder(
                 "H.soldto_id, H.modified_date, H.operator_id, H.transaction_no, getdate() as imported_at FROM sales_transactions_header H",
                 "INNER JOIN (SELECT soldto_id, MIN(modified_date) As first_occurence FROM Sales_Transactions_Header "
@@ -73,33 +73,36 @@ public class EvoposClient extends ServiceClient {
             else
                 contactQuery.setWhere("DATEADD(ss, 5, date_created) < Contacts_Persons.modified_date");
 
-            contactQuery.appendWhere("modified_date>" + "'" + updateTime + "'");
+            //TODO: look over datetime
+            contactQuery.appendWhere("Contacts_Persons.modified_date>" + "" + updateTime + "");
             ps = conn.prepareStatement(contactQuery.getQuery());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 JSONObject entry = new JSONObject();
-                entry.put("lastName", rs.getString("name"));
-                entry.put("mobilePhone", rs.getString("mobile_mhone"));
-                entry.put("companyName", name);
+                JSONUtil.putString(entry, "firstName", rs.getString("firstname"));
+                JSONUtil.putString(entry, "lastName", rs.getString("name"));
+                JSONUtil.putString(entry, "mobilePhone", rs.getString("mobile_phone"));
+                JSONUtil.putString(entry, "department", name);
 
                 JSONObject primaryEmail = new JSONObject();
-                primaryEmail.put("emailAddress", rs.getString("email"));
-                primaryEmail.put("optOut", rs.getString("send_mail"));
+                JSONUtil.putString(primaryEmail, "emailAddress", rs.getString("email"));
+                primaryEmail.put("optOut", rs.getString("send_mail") == "1" ? "0" : "1");
                 entry.put("primaryEmail", primaryEmail);
 
                 JSONObject primaryAddress = new JSONObject();
-                primaryAddress.put("street1", rs.getString("address_1"));
-                primaryAddress.put("street2", rs.getString("address_2"));
-                primaryAddress.put("city", rs.getString("town"));
-                primaryAddress.put("state", rs.getString("state"));
-                primaryAddress.put("postalCode", rs.getString("code"));
-                primaryAddress.put("country", rs.getString("country"));
+                JSONUtil.putString(primaryAddress, "street1", rs.getString("address_1"));
+                JSONUtil.putString(primaryAddress, "street2", rs.getString("address_2"));
+                JSONUtil.putString(primaryAddress, "city", rs.getString("town"));
+                JSONUtil.putString(primaryAddress, "state", rs.getString("state"));
+                JSONUtil.putString(primaryAddress, "postalCode", rs.getString("code"));
+                JSONUtil.putString(primaryAddress, "country", rs.getString("country"));
                 entry.put("primaryAddress", primaryAddress);
-                entry.put("modified_at", rs.getString("modified_date"));
-                entry.put("created_at", rs.getString("date_created"));
-                entry.put("imported_at", rs.getString("imported_at"));
-                entry.put("companyName", name);
+                JSONUtil.putString(entry, "modified_at", rs.getString("modified_date"));
+//                JSONUtil.putString(entry, "created_at", rs.JSONUtil.putString("date_created"));
+                JSONUtil.putString(entry, "imported_at", rs.getString("imported_at"));
+//                JSONUtil.putString(entry, "companyName", name);
+                lukasync.util.JSONUtil.prettyPrint(entry);
                 contacts.put(entry);
             }
             rs.close();

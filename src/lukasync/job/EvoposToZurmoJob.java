@@ -1,8 +1,8 @@
 package lukasync.job;
 
-import lukasync.util.JSONUtil;
 import lukasync.client.EvoposClient;
 import lukasync.client.ZurmoClient;
+import lukasync.util.JSONUtil;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,13 +15,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     @Override
     public JSONObject execute() {
-        copyNewUsers();
-        copyUpdatedUsers();
+//        copyNewUsers();
+//        copyUpdatedUsers();
 
         copyNewContacts();
-        copyUpdatedContacts();
-
-        copyNewTransactions();
+//        copyUpdatedContacts();
+//
+//        copyContactRelations();
+//        copyNewTransactions();
 
         return null;
     }
@@ -36,18 +37,28 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
         }
     }
 
-   private void copyUpdatedUsers () {
-       JSONArray updatedUsers = source.getUpdatedUsers("0");
-       System.out.println("DEBUG: copyUpdatedUsers():");
-       JSONUtil.prettyPrint(updatedUsers);
+    private void copyUpdatedUsers () {
+        JSONArray updatedUsers = source.getUpdatedUsers("0");
+        System.out.println("DEBUG: copyUpdatedUsers():");
+        JSONUtil.prettyPrint(updatedUsers);
 
-       for (int i = 0; i < updatedUsers.length(); i++) {
-           destination.createUser(updatedUsers.getJSONObject(i));
-       }
-   }
+        for (int i = 0; i < updatedUsers.length(); i++) {
+            destination.createUser(updatedUsers.getJSONObject(i));
+        }
+    }
+
+    private void copyContactRelations () {
+        //To change body of created methods use File | Settings | File Templates.
+    }
 
     private void copyNewContacts () {
-        //To change body of created methods use File | Settings | File Templates.
+        JSONArray newContacts = source.getNewContacts("0");
+        System.out.println("DEBUG: copyNewContacts():");
+        JSONUtil.prettyPrint(newContacts);
+
+        for (int i = 0; i < newContacts.length(); i++) {
+            destination.createContact(newContacts.getJSONObject(i));
+        }
     }
 
     private void copyUpdatedContacts () {

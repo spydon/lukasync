@@ -1,10 +1,10 @@
 package lukasync.util;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class JSONUtil {
     public static String prettify (JSONObject json) {
@@ -23,7 +23,13 @@ public class JSONUtil {
         System.out.println(prettify(json));
     }
 
+    public static JSONObject putString(JSONObject json, String key, String value) {
+        return value == null ? json.put(key, "") : json.put(key, value);
+    }
 
+//    public static JSONObject putBoolean(JSONObject json, String key, boolean value) {
+//        return value == null ? json.put(key, "") : json.put(key, value);
+//    }
 
     public static String jsonToURLEncoding(JSONObject json) {
         String output = "";

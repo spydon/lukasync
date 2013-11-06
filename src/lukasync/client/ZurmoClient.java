@@ -115,16 +115,37 @@ public class ZurmoClient extends ServiceClient{
         voidResponse(response);
     }
 
+    public boolean createContact(JSONObject contact) {
+        JSONObject primaryEmail = contact.getJSONObject("primaryEmail");
+        JSONObject primaryAddress = contact.getJSONObject("primaryAddress");
+
+        return createContact(
+                1,
+                contact.getString("firstName"),
+                contact.getString("lastName"),
+                contact.getString("mobilePhone"),
+                contact.getString("department"),
+                primaryEmail.getString("emailAddress"),
+                primaryEmail.getString("optOut"),
+                primaryAddress.getString("street1"),
+                primaryAddress.getString("street2"),
+                primaryAddress.getString("city"),
+                primaryAddress.getString("state"),
+                primaryAddress.getString("postalCode"),
+                primaryAddress.getString("country")
+        );
+    }
+
     public boolean createContact(
             int ownerId,
 
             String firstName,
             String lastName,
             String mobilePhone,
-            String companyName,
+            String department,
 
             String emailAddress,
-            boolean optOut,
+            String optOut,
 
             String street1,
             String street2,
@@ -140,7 +161,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("firstName", firstName);
         data.put("lastName", lastName);
         data.put("mobilePhone", mobilePhone);
-        data.put("companyName", companyName);
+        data.put("department", department);
 
         JSONObject primaryEmail = new JSONObject();
         primaryEmail.put("emailAddress", emailAddress);
@@ -160,6 +181,10 @@ public class ZurmoClient extends ServiceClient{
         owner.put("id", ownerId);
         data.put("owner", owner);
 
+        JSONObject status = new JSONObject();
+        status.put("id", 7);
+        data.put("state", status);
+
         JSONObject payload = new JSONObject();
         payload.put("data", data);
 
@@ -175,10 +200,10 @@ public class ZurmoClient extends ServiceClient{
             String firstName,
             String lastName,
             String mobilePhone,
-            String companyName,
+            String department,
 
             String emailAddress,
-            Boolean optOut,
+            String optOut,
 
             String street1,
             String street2,
@@ -191,7 +216,7 @@ public class ZurmoClient extends ServiceClient{
                 firstName == null &&
                 lastName == null &&
                 mobilePhone == null &&
-                companyName == null &&
+                department == null &&
                 emailAddress == null &&
                 optOut == null &&
                 street1 == null &&
@@ -207,39 +232,28 @@ public class ZurmoClient extends ServiceClient{
         JSONObject data = new JSONObject();
 
         if (firstName != null) {
-
             data.put("firstName", firstName);
-
         }
 
         if (lastName != null) {
-
             data.put("lastName", lastName);
-
         }
 
         if (mobilePhone != null) {
-
             data.put("mobilePhone", mobilePhone);
-
         }
 
-        if (companyName != null) {
-
-            data.put("companyName", companyName);
-
+        if (department != null) {
+            data.put("department", department);
         }
 
         updateContactEmailCheck(emailAddress, optOut, data);
-
         updateContactAddressCheck(street1, street2, city, postalCode, country, data);
 
         if (ownerId != null) {
-
             JSONObject owner = new JSONObject();
             owner.put("id", ownerId);
             data.put("owner", owner);
-
         }
 
         JSONObject payload = new JSONObject();
@@ -249,22 +263,18 @@ public class ZurmoClient extends ServiceClient{
         return booleanResponse(response);
     }
 
-    private void updateContactEmailCheck (String emailAddress, Boolean optOut, JSONObject outData) {
+    private void updateContactEmailCheck (String emailAddress, String optOut, JSONObject outData) {
         if (emailAddress != null
                 || optOut != null) {
 
             JSONObject primaryEmail = new JSONObject();
 
             if (emailAddress != null) {
-
                 primaryEmail.put("emailAddress", emailAddress);
-
             }
 
             if (optOut != null) {
-
                 primaryEmail.put("optOut", optOut);
-
             }
 
             outData.put("primaryEmail", primaryEmail);
@@ -286,33 +296,23 @@ public class ZurmoClient extends ServiceClient{
             JSONObject primaryAddress = new JSONObject();
 
             if (street1 != null) {
-
                 primaryAddress.put("street1", street1);
-
             }
 
             if (street2 != null) {
-
                 primaryAddress.put("street2", street2);
-
             }
 
             if (city != null) {
-
                 primaryAddress.put("city", city);
-
             }
 
             if (postalCode != null) {
-
                 primaryAddress.put("postalCode", postalCode);
-
             }
 
             if (country != null) {
-
                 primaryAddress.put("country", country);
-
             }
 
             outData.put("primaryAddress", primaryAddress);
@@ -369,7 +369,7 @@ public class ZurmoClient extends ServiceClient{
 
         JSONObject primaryEmail = new JSONObject();
         primaryEmail.put("emailAddress", emailAddress);
-        primaryEmail.put("optOut", 0);
+        primaryEmail.put("optOut", "0");
 
         JSONObject primaryAddress = new JSONObject();
         primaryAddress.put("city", city);
