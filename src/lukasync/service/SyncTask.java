@@ -1,8 +1,9 @@
-package lukasync.main;
+package lukasync.service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import lukasync.Lukasync;
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import lukasync.main.Lukasync;
+import lukasync.Lukasync;
 import lukasync.util.Rest;
 
 import org.json.JSONArray;

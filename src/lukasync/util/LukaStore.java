@@ -1,6 +1,6 @@
 package lukasync.util;
 
-import lukasync.main.Lukasync;
+import lukasync.Lukasync;
 import org.json.JSONObject;
 
 import java.sql.Connection;

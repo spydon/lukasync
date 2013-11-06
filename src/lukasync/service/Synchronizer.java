@@ -1,5 +1,6 @@
-package lukasync.main;
+package lukasync.service;
 
+import lukasync.Lukasync;
 import lukasync.client.EvoposClient;
 import lukasync.client.MagentoClient;
 import lukasync.client.ZurmoClient;
