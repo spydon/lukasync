@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `customer`;
 CREATE TABLE `customer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `enitity_service_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL, -- DROP IT LIKE IT'S HOT
   `first_name` varchar(64) NOT NULL,
   `last_name` varchar(64) DEFAULT NULL,
   `email` varchar(64) NOT NULL,

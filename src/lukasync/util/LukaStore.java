@@ -8,27 +8,41 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class LukaStore {
-    public void createContact (JSONObject contact) {
-        Connection conn = getConnection();
+    /*
+    public void createCustomer (int serviceId, String externalId, JSONObject contact) {
+//        // XXX imported_at and modified_at are present in contact
+//
+//        // check if entity_service exists, abort if it does
+//        if (customerExists(serviceId, externalId)) {
+//            throw new IllegalArgumentException("Customer already exists!");
+//        }
+//
+//        // create entity_service, keep id
+//        int entityServiceId =
+//        // create customer, pointing out user and entity_service
+//
+//        /*
+//        Connection conn = getConnection();
+//
+//        String[] columns = {
+//                "entity_service_id",
+//                "user_id",
+//                "first_name",
+//                "last_name",
+//                "email",
+//                "mobile",
+//                "address",
+//                "city",
+//                "state",
+//                "postcode",
+//                "country"
+//        };
+//
+//        Object[] values = {
+//
+//        };
+//        String statementString;
 
-        String[] columns = {
-                "entity_service_id",
-                "user_id",
-                "first_name",
-                "last_name",
-                "email",
-                "mobile",
-                "address",
-                "city",
-                "state",
-                "postcode",
-                "country"
-        };
-
-        String[] values = {
-                // TODO How to handle that there might be strings or ints? instanceof in the helper method?
-        };
-        // TODO set up shiz for calling getCreateStatementString()
     }
 
     private String getCreateStatementString (String table,
@@ -83,4 +97,5 @@ public class LukaStore {
 
         return null;
     }
+    */
 }
