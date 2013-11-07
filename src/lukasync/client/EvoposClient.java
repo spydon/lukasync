@@ -31,7 +31,7 @@ public class EvoposClient extends ServiceClient {
                 + "formatted_address, country, customer_No, send_mail, staff_id, date_created, Contacts_Persons.modified_date, getdate() as imported_at",
                 "Contacts_Persons "
                 + "INNER JOIN Contacts ON Contacts.id = Contacts_Persons.contact_id",
-                "LEN(Customer_No) > 10",
+                "LEN(Customer_No) > 0", //TODO: Change this to ~10
                 "",
                 "Contacts_Persons.modified_date asc"
                 );
@@ -53,8 +53,7 @@ public class EvoposClient extends ServiceClient {
                 "Sales_Transactions_Lines "
                 + "INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no "
                 + "INNER JOIN Contacts ON soldto_id = Contacts.id",
-                "Sales_Transactions_Header.modified_date > 0 AND Sales_Transactions_Lines.gross >= 0 AND "
-                + "Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10",
+                "Sales_Transactions_Lines.gross >= 0 AND Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10",
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_transactions_Lines.gross, soldto_id, Sales_Transactions_Header.modified_date ",
                 "Sales_Transactions_Lines.transaction_no");
     }
@@ -128,8 +127,9 @@ public class EvoposClient extends ServiceClient {
             else
                 contactQuery.appendWhere("DATEADD(ss, 5, date_created) < Contacts_Persons.modified_date");
 
-            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
+            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime; //TODO: Change 0 to null
             contactQuery.appendWhere("Contacts_Persons.modified_date>" + "'" + updateTime + "'");
+            System.out.println("DEBUG: contactQuery - " + contactQuery.getQuery());
             ps = conn.prepareStatement(contactQuery.getQuery());
 
             ResultSet rs = ps.executeQuery();
