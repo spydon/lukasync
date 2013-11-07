@@ -49,14 +49,13 @@ public class EvoposClient extends ServiceClient {
                 "");
         this.salesQuery = new QueryBuilder(
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_Transactions_Lines.gross, "
-                + "Customer_No, Qty, Sales_Transactions_Header.modified_date, getdate() as imported_at",
+                + "Customer_No, Qty, Sales_Transactions_Header.sale_date, getdate() as imported_at",
                 "Sales_Transactions_Lines "
                 + "INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no "
                 + "INNER JOIN Contacts ON soldto_id = Contacts.id",
                 "Sales_Transactions_Lines.gross >= 0 AND Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10 AND LEN(customer_no) > 6",
                 "",
                 "Sales_Transactions_Lines.transaction_no");
-        System.out.println(salesQuery.getQuery());
     }
 
     @Override
@@ -207,7 +206,7 @@ public class EvoposClient extends ServiceClient {
             PreparedStatement ps;
 
             updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
-            userQuery.appendWhere("Sales_Transactions_Header.modified_date>" + "'" + updateTime + "'");
+            userQuery.appendWhere("Sales_Transactions_Header.sale_date>" + "'" + updateTime + "'");
             System.out.println("getNewSales(), salesQuery: " + salesQuery.getQuery());
             ps = conn.prepareStatement(salesQuery.getQuery());
 
@@ -220,7 +219,7 @@ public class EvoposClient extends ServiceClient {
                 entry.put("description", rs.getString("description"));
                 entry.put("gross", rs.getString("gross"));
                 entry.put("customer_no", rs.getString("customer_no"));
-                entry.put("modified_at", rs.getString("modified_date"));
+                entry.put("modified_at", rs.getString("sale_date"));
                 entry.put("imported_at", rs.getString("imported_at"));
                 sales.put(entry);
             }
