@@ -75,9 +75,12 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
     private void copyNewTransactions () {
         JSONArray saleLines = source.getNewSales("0"); // TODO keep track of latest know transaction date
 
+        System.out.println("\n");
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < saleLines.length(); i++) {
-            JSONObject currentSaleLine = saleLines.getJSONObject(0);
+            JSONObject currentSaleLine = saleLines.getJSONObject(i);
+            System.out.println("DEBUG: currentSaleLine: " + currentSaleLine.toString());
             String qty = currentSaleLine.getString("qty");
             String partNo = currentSaleLine.getString("part_no");
             String description = currentSaleLine.getString("description");
@@ -104,7 +107,10 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
                     int userId = 1;
                     int contactId = destination.getContactIdByCustomerNo(currentSaleLine.getString("customer_no"));
 
-                    destination.createNote(userId, contactId, sb.toString(), currentSaleLine.getString("modified_at"));
+                    if (contactId != -1) {
+                        destination.createNote(userId, contactId, sb.toString(), currentSaleLine.getString("modified_at"));
+                    }
+
                     sb.setLength(0);
                 }
             }

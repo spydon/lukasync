@@ -433,9 +433,7 @@ public class ZurmoClient extends ServiceClient{
 
         String dateSafe;
         try {
-            dateSafe = sdf.parse(dateUnsafe).toString();
-            System.out.println("dateUnsafe" + dateUnsafe);
-            System.out.println("dateSafe" + dateSafe);
+            dateSafe = sdf.format(sdf.parse(dateUnsafe));
         } catch (ParseException e) {
             e.printStackTrace();
             return false;
@@ -522,10 +520,12 @@ public class ZurmoClient extends ServiceClient{
 
         } else if (!response.getString("status").equals("SUCCESS")) {
 
+            String errorSuffix = "";
+            if (response.has("errors") && response.get("errors") != JSONObject.NULL) {
+                errorSuffix = " Errors: " + response.getJSONObject("errors").toString();
+            }
             throw new IllegalArgumentException(
-                    response.getString("message") +
-                            " Errors: " +
-                            response.getJSONObject("errors").toString()
+                    response.getString("message") + errorSuffix
             );
 
         }
