@@ -49,13 +49,14 @@ public class EvoposClient extends ServiceClient {
                 "");
         this.salesQuery = new QueryBuilder(
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_Transactions_Lines.gross, "
-                + "Customer_No, Sales_Transactions_Header.modified_date, getdate() as imported_at",
+                + "Customer_No, Qty, Sales_Transactions_Header.modified_date, getdate() as imported_at",
                 "Sales_Transactions_Lines "
                 + "INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no "
                 + "INNER JOIN Contacts ON soldto_id = Contacts.id",
-                "Sales_Transactions_Lines.gross >= 0 AND Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10",
-                "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_transactions_Lines.gross, soldto_id, Sales_Transactions_Header.modified_date ",
+                "Sales_Transactions_Lines.gross >= 0 AND Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10 AND LEN(customer_no) > 6",
+                "",
                 "Sales_Transactions_Lines.transaction_no");
+        System.out.println(salesQuery.getQuery());
     }
 
     @Override
@@ -177,7 +178,7 @@ public class EvoposClient extends ServiceClient {
             PreparedStatement ps;
 
             updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
-            contactRelationQuery.appendWhere("H.modified_date>" + "'" + updateTime + "'");
+            contactRelationQuery.appendWhere("P.modified_date>" + "'" + updateTime + "'");
             System.out.println("getNewContactRelations(), contactRelationQuery: " + contactRelationQuery.getQuery());
             ps = conn.prepareStatement(contactRelationQuery.getQuery());
 
@@ -205,7 +206,8 @@ public class EvoposClient extends ServiceClient {
             Connection conn = getConnection();
             PreparedStatement ps;
 
-            userQuery.appendWhere("Sales_Transactions_Header.modified_date>" + "" + updateTime + "");
+            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
+            userQuery.appendWhere("Sales_Transactions_Header.modified_date>" + "'" + updateTime + "'");
             System.out.println("getNewSales(), salesQuery: " + salesQuery.getQuery());
             ps = conn.prepareStatement(salesQuery.getQuery());
 
