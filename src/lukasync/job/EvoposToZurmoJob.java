@@ -15,14 +15,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     @Override
     public JSONObject execute() {
-        copyNewUsers();
-        copyUpdatedUsers();
+        //copyNewUsers();
+        //copyUpdatedUsers();
 
-        copyNewContacts();
-        copyUpdatedContacts();
+        //copyNewContacts();
+        //copyUpdatedContacts();
 
-        copyContactRelations();
-//        copyNewTransactions();
+        //copyContactRelations();
+        copyNewTransactions();
 
         return null;
     }

@@ -209,13 +209,13 @@ public class ZurmoClient extends ServiceClient{
         pagination.put("pageSize", 1);
 
         JSONObject search = new JSONObject();
-        search.put("industry", customerNo);
+        search.put("officeFax", customerNo);
 
         JSONObject searchFilter = new JSONObject();
         searchFilter.put("pagination", pagination);
         searchFilter.put("search", search);
 
-        searchFilter.put("sort", "industry.asc");
+        searchFilter.put("sort", "officeFax.asc");
 
         HashMap<String, String> headers = getDefaultHeaders();
         String searchFilterString = JSONUtil.jsonToURLEncoding(searchFilter);
@@ -227,15 +227,22 @@ public class ZurmoClient extends ServiceClient{
 
         } else if (!response.getString("status").equals("SUCCESS")) {
 
+            String errorSuffix = "";
+            if (response.has("errors") && response.get("errors") != JSONObject.NULL) {
+                errorSuffix = " Errors: " + response.getJSONObject("errors").toString();
+            }
+
             throw new IllegalArgumentException(
-                    response.getString("message") +
-                            " Errors: " +
-                            response.getJSONObject("errors").toString()
+                    response.getString("message") + errorSuffix
             );
 
         } else {
 
-            return response.getJSONObject("data").getJSONArray("items").getJSONObject(0).getInt("id");
+            if (response.getJSONObject("data").getInt("totalCount") < 1) {
+                return -1;
+            } else {
+                return response.getJSONObject("data").getJSONArray("items").getJSONObject(0).getInt("id");
+            }
 
         }
     }
@@ -249,7 +256,7 @@ public class ZurmoClient extends ServiceClient{
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
                 contact.getString("department"),
-                contact.getString("industry"),
+                contact.getString("officeFax"),
                 primaryEmail.getString("emailAddress"),
                 primaryEmail.getString("optOut"),
                 primaryAddress.getString("street1"),
@@ -268,7 +275,7 @@ public class ZurmoClient extends ServiceClient{
             String lastName,
             String mobilePhone,
             String department,
-            String industry,
+            String officeFax,
 
             String emailAddress,
             String optOut,
@@ -308,7 +315,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("lastName", lastName);
         data.put("mobilePhone", mobilePhone);
         data.put("department", department);
-        data.put("industry", industry);
+        data.put("officeFax", officeFax);
 
         JSONObject payload = new JSONObject();
         payload.put("data", data);
@@ -330,7 +337,7 @@ public class ZurmoClient extends ServiceClient{
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
                 contact.getString("department"),
-                contact.getString("industry"),
+                contact.getString("officeFax"),
                 contact.getString("emailAddress"),
                 contact.getString("optOut"),
                 contact.getString("street1"),
@@ -350,7 +357,7 @@ public class ZurmoClient extends ServiceClient{
             String lastName,
             String mobilePhone,
             String department,
-            String industry,
+            String officeFax,
 
             String emailAddress,
             String optOut,
@@ -380,7 +387,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("lastName", lastName);
         data.put("mobilePhone", mobilePhone);
         data.put("department", department);
-        data.put("industry", industry);
+        data.put("officeFax", officeFax);
         JSONObject owner = new JSONObject();
 
         owner.put("id", ownerId);
@@ -428,6 +435,8 @@ public class ZurmoClient extends ServiceClient{
         String dateSafe;
         try {
             dateSafe = sdf.parse(dateUnsafe).toString();
+            System.out.println("dateUnsafe" + dateUnsafe);
+            System.out.println("dateSafe" + dateSafe);
         } catch (ParseException e) {
             e.printStackTrace();
             return false;
@@ -457,7 +466,7 @@ public class ZurmoClient extends ServiceClient{
         payload.put("data", data);
 
         if (Lukasync.printDebug) {
-            //System.out.println(payload.toString());
+            System.out.println(payload.toString());
             //System.out.println(JSONUtil.jsonToURLEncoding(payload));
         }
 

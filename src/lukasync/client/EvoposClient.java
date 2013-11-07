@@ -140,7 +140,7 @@ public class EvoposClient extends ServiceClient {
                 JSONUtil.putString(entry, "lastName", rs.getString("name"));
                 JSONUtil.putString(entry, "mobilePhone", rs.getString("mobile_phone"));
                 JSONUtil.putString(entry, "department", name);
-                JSONUtil.putString(entry, "industry", rs.getString("customer_no"));
+                JSONUtil.putString(entry, "officeFax", rs.getString("customer_no"));
 
                 JSONObject primaryEmail = new JSONObject();
                 JSONUtil.putString(primaryEmail, "emailAddress", rs.getString("email"));
@@ -216,6 +216,7 @@ public class EvoposClient extends ServiceClient {
                 JSONObject entry = new JSONObject();
                 entry.put("transaction_no", rs.getString("transaction_no"));
                 entry.put("part_no", rs.getString("part_no"));
+                entry.put("qty", rs.getString("qty"));
                 entry.put("description", rs.getString("description"));
                 entry.put("gross", rs.getString("gross"));
                 entry.put("customer_no", rs.getString("customer_no"));
