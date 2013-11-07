@@ -19,14 +19,6 @@ public class EvoposClient extends ServiceClient {
 
     public EvoposClient(JSONObject conf) {
         super(conf);
-        this.contactQuery = new QueryBuilder(
-                "Contacts.name, firstname, surname, mobile_phone, email, address_1, address_2, town, state, code, "
-                + "formatted_address, country, customer_No, send_mail, staff_id, date_created, Contacts_Persons.modified_date, getdate() as imported_at",
-                "Contacts_Persons INNER JOIN Contacts ON Contacts.id = Contacts_Persons.contact_id",
-                "",
-                "",
-                "Contacts_Persons.modified_date asc"
-                );
         this.userQuery = new QueryBuilder(
                 "short_name, pass_code, first_name, last_name, mobile, email, home_address, postcode, date_signed, LSEmployees.modified_date, getdate() as imported_at",
                 "Operators INNER JOIN LSEmployees ON LSEmployees.operator_id = Operators.id",
@@ -34,85 +26,41 @@ public class EvoposClient extends ServiceClient {
                 "",
                 ""
                 );
+        this.contactQuery = new QueryBuilder(
+                "Contacts.customer_no, Contacts.name, firstname, surname, mobile_phone, email, address_1, address_2, town, state, code, "
+                + "formatted_address, country, customer_No, send_mail, staff_id, date_created, Contacts_Persons.modified_date, getdate() as imported_at",
+                "Contacts_Persons "
+                + "INNER JOIN Contacts ON Contacts.id = Contacts_Persons.contact_id",
+                "LEN(Customer_No) > 10",
+                "",
+                "Contacts_Persons.modified_date asc"
+                );
+        this.contactRelationQuery = new QueryBuilder(
+                "Customer_No, Short_Name as User_Name, P.Modified_Date, GETDATE() as imported_at",
+                "(SELECT X.Customer_No, H.SoldTo_ID, H.Modified_Date, H.Operator_ID, H.Transaction_No, GETDATE() as imported_at "
+                + "FROM Sales_Transactions_Header H "
+                + "INNER JOIN (SELECT Customer_No, SoldTo_ID, MIN(Sales_Transactions_Header.Modified_Date) As first_occurence "
+                + "FROM Sales_Transactions_Header "
+                + "INNER JOIN Contacts ON SoldTo_ID = Contacts.ID WHERE SoldTo_ID > 10 "
+                + "GROUP BY SoldTo_ID, Customer_No) X ON H.SoldTo_ID = X.SoldTo_ID AND H.Modified_Date = X.first_occurence) P "
+                + "INNER JOIN Operators ON Operator_ID = Operators.ID",
+                "LEN(Customer_No) > 10",
+                "",
+                "");
         this.salesQuery = new QueryBuilder(
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_Transactions_Lines.gross, "
-                + "soldto_id, Sales_Transactions_Header.modified_date, getdate() as imported_at",
-                "Sales_Transactions_Lines INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no",
+                + "Customer_No, Sales_Transactions_Header.modified_date, getdate() as imported_at",
+                "Sales_Transactions_Lines "
+                + "INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no "
+                + "INNER JOIN Contacts ON soldto_id = Contacts.id",
                 "Sales_Transactions_Header.modified_date > 0 AND Sales_Transactions_Lines.gross >= 0 AND "
                 + "Sales_Transactions_Header.sales_type = 'INVOICE' AND part_no <> '.GADJUSTMENT' AND soldto_id > 10",
                 "Sales_Transactions_Lines.transaction_no, part_no, description, Sales_transactions_Lines.gross, soldto_id, Sales_Transactions_Header.modified_date ",
                 "Sales_Transactions_Lines.transaction_no");
-        this.contactRelationQuery = new QueryBuilder(
-                "H.soldto_id, H.modified_date, H.operator_id, H.transaction_no, getdate() as imported_at FROM sales_transactions_header H",
-                "INNER JOIN (SELECT soldto_id, MIN(modified_date) As first_occurence FROM Sales_Transactions_Header "
-                + "WHERE soldto_id > 10 GROUP BY soldto_id) X ON H.soldto_id = X.soldto_id AND H.modified_date = X.first_occurence",
-                "",
-                "",
-                "soldto_id");
-
     }
 
     @Override
     protected void init() {}
-
-    public JSONArray getNewContacts(String updateTime) {
-        return getContacts(true, updateTime);
-    }
-
-    public JSONArray getUpdatedContacts(String updateTime) {
-        return getContacts(false, updateTime);
-    }
-
-    private JSONArray getContacts(boolean isNew, String updateTime) {
-        JSONArray contacts = new JSONArray();
-        try {
-            Connection conn = getConnection();
-            PreparedStatement ps;
-            if(isNew)
-                contactQuery.setWhere("DATEADD(ss, 5, date_created) > Contacts_Persons.modified_date");
-            else
-                contactQuery.setWhere("DATEADD(ss, 5, date_created) < Contacts_Persons.modified_date");
-
-            //TODO: look over datetime
-            contactQuery.appendWhere("Contacts_Persons.modified_date>" + "" + updateTime + "");
-            ps = conn.prepareStatement(contactQuery.getQuery());
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                JSONObject entry = new JSONObject();
-                JSONUtil.putString(entry, "firstName", rs.getString("firstname"));
-                JSONUtil.putString(entry, "lastName", rs.getString("name"));
-                JSONUtil.putString(entry, "mobilePhone", rs.getString("mobile_phone"));
-                JSONUtil.putString(entry, "department", name);
-
-                JSONObject primaryEmail = new JSONObject();
-                JSONUtil.putString(primaryEmail, "emailAddress", rs.getString("email"));
-                primaryEmail.put("optOut", rs.getString("send_mail") == "1" ? "0" : "1");
-                entry.put("primaryEmail", primaryEmail);
-
-                JSONObject primaryAddress = new JSONObject();
-                JSONUtil.putString(primaryAddress, "street1", rs.getString("address_1"));
-                JSONUtil.putString(primaryAddress, "street2", rs.getString("address_2"));
-                JSONUtil.putString(primaryAddress, "city", rs.getString("town"));
-                JSONUtil.putString(primaryAddress, "state", rs.getString("state"));
-                JSONUtil.putString(primaryAddress, "postalCode", rs.getString("code"));
-                JSONUtil.putString(primaryAddress, "country", rs.getString("country"));
-                entry.put("primaryAddress", primaryAddress);
-                JSONUtil.putString(entry, "modified_at", rs.getString("modified_date"));
-//                JSONUtil.putString(entry, "created_at", rs.JSONUtil.putString("date_created"));
-                JSONUtil.putString(entry, "imported_at", rs.getString("imported_at"));
-//                JSONUtil.putString(entry, "companyName", name);
-                lukasync.util.JSONUtil.prettyPrint(entry);
-                contacts.put(entry);
-            }
-            rs.close();
-            ps.close();
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return contacts;
-    }
 
     public JSONArray getNewUsers(String updateTime) {
         return getUsers(true, updateTime);
@@ -162,23 +110,83 @@ public class EvoposClient extends ServiceClient {
         return contacts;
     }
 
+    public JSONArray getNewContacts(String updateTime) {
+        return getContacts(true, updateTime);
+    }
+
+    public JSONArray getUpdatedContacts(String updateTime) {
+        return getContacts(false, updateTime);
+    }
+
+    private JSONArray getContacts(boolean isNew, String updateTime) {
+        JSONArray contacts = new JSONArray();
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps;
+            if(isNew)
+                contactQuery.appendWhere("DATEADD(ss, 5, date_created) > Contacts_Persons.modified_date");
+            else
+                contactQuery.appendWhere("DATEADD(ss, 5, date_created) < Contacts_Persons.modified_date");
+
+            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
+            contactQuery.appendWhere("Contacts_Persons.modified_date>" + "'" + updateTime + "'");
+            ps = conn.prepareStatement(contactQuery.getQuery());
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                JSONObject entry = new JSONObject();
+                JSONUtil.putString(entry, "firstName", rs.getString("firstname"));
+                JSONUtil.putString(entry, "lastName", rs.getString("name"));
+                JSONUtil.putString(entry, "mobilePhone", rs.getString("mobile_phone"));
+                JSONUtil.putString(entry, "department", name);
+                JSONUtil.putString(entry, "industry", rs.getString("customer_no"));
+
+                JSONObject primaryEmail = new JSONObject();
+                JSONUtil.putString(primaryEmail, "emailAddress", rs.getString("email"));
+                primaryEmail.put("optOut", rs.getString("send_mail") == "1" ? "0" : "1");
+                entry.put("primaryEmail", primaryEmail);
+
+                JSONObject primaryAddress = new JSONObject();
+                JSONUtil.putString(primaryAddress, "street1", rs.getString("address_1"));
+                JSONUtil.putString(primaryAddress, "street2", rs.getString("address_2"));
+                JSONUtil.putString(primaryAddress, "city", rs.getString("town"));
+                JSONUtil.putString(primaryAddress, "state", rs.getString("state"));
+                JSONUtil.putString(primaryAddress, "postalCode", rs.getString("code"));
+                JSONUtil.putString(primaryAddress, "country", rs.getString("country"));
+                entry.put("primaryAddress", primaryAddress);
+                JSONUtil.putString(entry, "modified_at", rs.getString("modified_date"));
+//                JSONUtil.putString(entry, "created_at", rs.JSONUtil.putString("date_created"));
+                JSONUtil.putString(entry, "imported_at", rs.getString("imported_at"));
+//                JSONUtil.putString(entry, "companyName", name);
+                lukasync.util.JSONUtil.prettyPrint(entry);
+                contacts.put(entry);
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return contacts;
+    }
+
     public JSONArray getNewContactRelations(String updateTime) {
         JSONArray contactRelations = new JSONArray();
         try {
             Connection conn = getConnection();
             PreparedStatement ps;
 
-            contactRelationQuery.appendWhere("H.modified_date>" + "" + updateTime + "");
+            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
+            contactRelationQuery.appendWhere("H.modified_date>" + "'" + updateTime + "'");
             System.out.println("getNewContactRelations(), contactRelationQuery: " + contactRelationQuery.getQuery());
             ps = conn.prepareStatement(contactRelationQuery.getQuery());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 JSONObject entry = new JSONObject();
-                entry.put("transaction_no", rs.getString("transaction_to"));
-                entry.put("operator_id", rs.getString("operator_id"));
-                entry.put("customer_id", rs.getString("soldto_id"));
-                entry.put("modified_at", rs.getString("modified_date"));
+                entry.put("customer_no", rs.getString("customer_no"));
+                entry.put("user_name", rs.getString("user_name"));
+                entry.put("modified_date", rs.getString("modified_date"));
                 entry.put("imported_at", rs.getString("imported_at"));
                 contactRelations.put(entry);
             }
@@ -204,11 +212,11 @@ public class EvoposClient extends ServiceClient {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 JSONObject entry = new JSONObject();
-                entry.put("transaction_no", rs.getString("transaction_to"));
+                entry.put("transaction_no", rs.getString("transaction_no"));
                 entry.put("part_no", rs.getString("part_no"));
                 entry.put("description", rs.getString("description"));
                 entry.put("gross", rs.getString("gross"));
-                entry.put("customer_id", rs.getString("soldto_id"));
+                entry.put("customer_no", rs.getString("customer_no"));
                 entry.put("modified_at", rs.getString("modified_date"));
                 entry.put("imported_at", rs.getString("imported_at"));
                 sales.put(entry);
