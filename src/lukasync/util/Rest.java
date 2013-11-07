@@ -11,6 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
@@ -19,6 +20,58 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Rest {
+    public static JSONObject jsonGet(String urlStr, HashMap<String, String> headers) {
+        if (Lukasync.printDebug) {
+            System.out.println("\n DEBUG: making GET request");
+            System.out.println("  url: " + urlStr);
+            System.out.println("  headers: " + headers.toString());
+        }
+
+        try {
+            URI uri = new URI(urlStr);
+            HttpGet get = new HttpGet(uri);
+
+            get.addHeader("Accept", "application/json");
+
+            for (String key : headers.keySet()) {
+                if (!key.equalsIgnoreCase("accept") && !key.equalsIgnoreCase("content-type")) {
+                    get.addHeader(key, headers.get(key));
+                }
+            }
+
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpResponse response = client.execute(get);
+
+            if (Lukasync.printDebug) {
+                //debugResponse(response);
+            }
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                StringWriter writer = new StringWriter();
+                IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
+                String result = writer.toString();
+
+                if (Lukasync.printDebug) {
+                    System.out.println("DEBUG: response entity: " + result);
+                }
+
+                return new JSONObject(result);
+            } else {
+                throw new IllegalArgumentException(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+            }
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public static JSONObject jsonPost(String urlStr, HashMap<String, String> headers) {
         return jsonPost(urlStr, headers, null);
@@ -40,7 +93,7 @@ public class Rest {
             post.addHeader("Accept", "application/json");
 
             for (String key : headers.keySet())
-                if (!key.equalsIgnoreCase("accept") || !key.equalsIgnoreCase("content-type"))
+                if (!key.equalsIgnoreCase("accept") && !key.equalsIgnoreCase("content-type"))
                     post.addHeader(key, headers.get(key));
 
             if (payload != null) {
@@ -102,7 +155,7 @@ public class Rest {
             put.addHeader("Accept", "application/json");
 
             for (String key : headers.keySet())
-                if (!key.equalsIgnoreCase("accept") || !key.equalsIgnoreCase("content-type"))
+                if (!key.equalsIgnoreCase("accept") && !key.equalsIgnoreCase("content-type"))
                     put.addHeader(key, headers.get(key));
 
             if (payload != null) {

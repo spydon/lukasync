@@ -48,7 +48,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
     }
 
     private void copyContactRelations () {
-        //To change body of created methods use File | Settings | File Templates.
+        System.out.println("DEBUG: got by username: " + destination.getUserIdByUsername("alienor orrr"));
     }
 
     private void copyNewContacts () {
