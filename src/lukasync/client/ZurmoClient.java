@@ -1,5 +1,6 @@
 package lukasync.client;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -412,10 +413,25 @@ public class ZurmoClient extends ServiceClient{
         return booleanResponse(response);
     }
 
-    public boolean createNote(int userId, int contactId, String description, Date date2) {
+    public boolean createNote (JSONObject note) {
+        return createNote(
+                note.getInt("userId"),
+                note.getInt("contactId"),
+                note.getString("description"),
+                note.getString("date")
+        );
+    }
+    public boolean createNote(int userId, int contactId, String description, String dateUnsafe) {
         HashMap<String, String> headers = getDefaultHeaders();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        String date = sdf.format(date2).toString();
+
+        String dateSafe;
+        try {
+            dateSafe = sdf.parse(dateUnsafe).toString();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
 
         JSONObject relation = new JSONObject();
         relation.put("action", "add");
@@ -433,7 +449,7 @@ public class ZurmoClient extends ServiceClient{
 
         JSONObject data = new JSONObject();
         data.put("description", description);
-        data.put("occurredOnDateTime", date);
+        data.put("occurredOnDateTime", dateSafe);
         data.put("modelRelations", modelRelations);
         data.put("owner", owner);
 

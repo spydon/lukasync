@@ -22,7 +22,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 //        copyUpdatedContacts();
 //
 //        copyContactRelations();
-//        copyNewTransactions();
+        copyNewTransactions();
 
         return null;
     }
@@ -66,6 +66,41 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
     }
 
     private void copyNewTransactions () {
-        //To change body of created methods use File | Settings | File Templates.
+        JSONArray saleLines = source.getNewSales("0"); // TODO keep track of latest know transaction date
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < saleLines.length(); i++) {
+            JSONObject currentSaleLine = saleLines.getJSONObject(0);
+            String qty = currentSaleLine.getString("qty");
+            String partNo = currentSaleLine.getString("part_no");
+            String description = currentSaleLine.getString("description");
+            String gross = currentSaleLine.getString("gross");
+
+            sb.append(qty);
+            sb.append(",");
+            sb.append(partNo);
+            sb.append(",");
+            sb.append(description);
+            sb.append(",");
+            sb.append(gross);
+            sb.append("\n");
+
+            if (i + 1 < saleLines.length()) {
+                String currentTransactionNo = currentSaleLine.getString("transaction_no");
+                JSONObject nextSaleLine = saleLines.getJSONObject(i+1);
+                String nextTransactionNo = nextSaleLine.getString("transaction_no");
+                if (!currentTransactionNo.equals(nextTransactionNo)) {
+                    sb.append("\ntransaction number: ");
+                    sb.append(currentTransactionNo);
+
+                    //int userId = destination.getUserIdByUsername(/* trololol */);
+                    int userId = 1;
+                    int contactId = destination.getContactIdByCustomerNo(currentSaleLine.getString("customer_no"));
+
+                    destination.createNote(userId, contactId, sb.toString(), currentSaleLine.getString("modified_at"));
+                    sb.setLength(0);
+                }
+            }
+        }
     }
 }
