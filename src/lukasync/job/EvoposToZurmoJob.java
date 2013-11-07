@@ -15,14 +15,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     @Override
     public JSONObject execute() {
-//        copyNewUsers();
-//        copyUpdatedUsers();
+        copyNewUsers();
+        copyUpdatedUsers();
 
         copyNewContacts();
-//        copyUpdatedContacts();
-//
-//        copyContactRelations();
-        copyNewTransactions();
+        copyUpdatedContacts();
+
+        copyContactRelations();
+//        copyNewTransactions();
 
         return null;
     }
@@ -48,7 +48,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
     }
 
     private void copyContactRelations () {
-        System.out.println("DEBUG: got by username: " + destination.getUserIdByUsername("alienor orrr"));
+        JSONArray newContactRelations = source.getNewContactRelations("0");
+        JSONUtil.prettyPrint(newContactRelations);
+
+        for (int i = 0; i < newContactRelations.length(); i++) {
+            destination.transferContact(
+                    destination.getContactIdByCustomerNo(newContactRelations.getJSONObject(i).getString("customer_no")),
+                    destination.getUserIdByUsername(newContactRelations.getJSONObject(i).getString("username")));
+        }
     }
 
     private void copyNewContacts () {
