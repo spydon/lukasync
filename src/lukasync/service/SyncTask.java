@@ -30,7 +30,7 @@ public class SyncTask implements Runnable {
                 System.err.println("ERROR: " + ex.getMessage());
                 ex.printStackTrace();
             } finally {
-                System.out.println("Will try again in " + Lukasync.WAIT / 1000 / 60 + " minutes");
+                System.out.println("Synchronisation done! Will try again in " + Lukasync.WAIT / 1000 / 60 + " minutes");
             }
         } catch (Exception e) {
             System.err.println("ERROR: SyncTask crashed, stacktrace below:");

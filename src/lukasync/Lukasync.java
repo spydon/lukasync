@@ -120,7 +120,7 @@ public class Lukasync {
         Scheduler scheduler = new Scheduler();
         scheduler.scheduleWithFixedDelay(new SyncTask(),
                 INITIAL_WAIT,
-                10000,
+                WAIT,
                 TimeUnit.MILLISECONDS);
     }
 

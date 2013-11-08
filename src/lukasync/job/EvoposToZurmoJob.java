@@ -74,8 +74,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyNewTransactions () {
         JSONArray saleLines = source.getNewSales("0"); // TODO keep track of latest know transaction date
-
         System.out.println("\n");
+
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < saleLines.length(); i++) {

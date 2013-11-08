@@ -15,10 +15,10 @@ public class Scheduler extends ScheduledThreadPoolExecutor {
         this.setRejectedExecutionHandler(new RejectedExecutionHandler() {
             @Override
             public void rejectedExecution (Runnable r, ThreadPoolExecutor executor) {
-                // TODO will this work?
+                System.err.println("Execution of sync got rejected! Trying again in " + Lukasync.WAIT / 1000 / 60); // TODO will this work?
+
                 ((ScheduledThreadPoolExecutor) executor)
-                        .scheduleWithFixedDelay(r, Lukasync.INITIAL_WAIT, 10000, TimeUnit.MILLISECONDS);
-                //System.err.println("Execution of sync got rejected!");
+                        .scheduleWithFixedDelay(r, Lukasync.WAIT, Lukasync.WAIT, TimeUnit.MILLISECONDS);
             }
         });
     }
