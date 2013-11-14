@@ -9,5 +9,7 @@ public class MagentoClient extends ServiceClient {
     }
 
     @Override
-    protected void init() {}
+    protected void init() {
+
+    }
 }

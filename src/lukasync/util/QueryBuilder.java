@@ -45,7 +45,7 @@ public class QueryBuilder implements Serializable {
     }
 
     public String appendWhere(String where) {
-        if (where.equals("")) {
+        if (this.where.equals("")) {
             this.where = where;
         } else {
             this.where = this.where + " AND " + where;

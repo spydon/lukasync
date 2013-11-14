@@ -20,42 +20,42 @@
 --
 
 DROP TABLE IF EXISTS `customer`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `customer` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `enitity_service_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL, -- DROP IT LIKE IT'S HOT
-  `first_name` varchar(64) NOT NULL,
-  `last_name` varchar(64) DEFAULT NULL,
-  `email` varchar(64) NOT NULL,
-  `mobile` varchar(64) NOT NULL,
-  `address` varchar(64) NOT NULL,
-  `city` varchar(64) NOT NULL,
-  `state` varchar(64) NOT NULL,
-  `postcode` varchar(64) NOT NULL,
-  `country` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+--/*!40101 SET @saved_cs_client     = @@character_set_client */;
+--/*!40101 SET character_set_client = utf8 */;
+--CREATE TABLE `customer` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `enitity_service_id` int(11) NOT NULL,
+--  `user_id` int(11) NOT NULL, -- DROP IT LIKE IT'S HOT
+--  `first_name` varchar(64) NOT NULL,
+--  `last_name` varchar(64) DEFAULT NULL,
+--  `email` varchar(64) NOT NULL,
+--  `mobile` varchar(64) NOT NULL,
+--  `address` varchar(64) NOT NULL,
+--  `city` varchar(64) NOT NULL,
+--  `state` varchar(64) NOT NULL,
+--  `postcode` varchar(64) NOT NULL,
+--  `country` varchar(64) NOT NULL,
+--  PRIMARY KEY (`id`)
+--) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `entity_service`
 --
 
 DROP TABLE IF EXISTS `entity_service`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `entity_service` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `service_id` varchar(64) NOT NULL,
-  `external_id` varchar(64) NOT NULL,
-  `is_origin` bit(1) NOT NULL,
-  `imported_at` datetime NOT NULL,
-  `modified_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+--/*!40101 SET @saved_cs_client     = @@character_set_client */;
+--/*!40101 SET character_set_client = utf8 */;
+--CREATE TABLE `entity_service` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `service_id` varchar(64) NOT NULL,
+--  `external_id` varchar(64) NOT NULL,
+--  `is_origin` bit(1) NOT NULL,
+--  `imported_at` datetime NOT NULL,
+--  `modified_at` datetime NOT NULL,
+--  PRIMARY KEY (`id`)
+--) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `service`
@@ -96,43 +96,48 @@ CREATE TABLE `service_flows` (
 --
 
 DROP TABLE IF EXISTS `transaction`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `transaction` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `enitity_service_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `customer_id` int(11) NOT NULL,
-  `total_gross` varchar(64) NOT NULL,
-  `description` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+--/*!40101 SET @saved_cs_client     = @@character_set_client */;
+--/*!40101 SET character_set_client = utf8 */;
+--CREATE TABLE `transaction` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `enitity_service_id` int(11) NOT NULL,
+--  `user_id` int(11) NOT NULL,
+--  `customer_id` int(11) NOT NULL,
+--  `total_gross` varchar(64) NOT NULL,
+--  `description` text NOT NULL,
+--  PRIMARY KEY (`id`)
+--) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user`
 --
 
 DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `enitity_service_id` int(11) NOT NULL,
-  `first_name` varchar(64) NOT NULL,
-  `last_name` varchar(64) DEFAULT NULL,
-  `username` varchar(64) NOT NULL,
-  `password` varchar(64) NOT NULL,
-  `email` varchar(64) NOT NULL,
-  `mobile` varchar(64) NOT NULL,
-  `address` varchar(64) NOT NULL,
-  `city` varchar(64) NOT NULL,
-  `state` varchar(64) NOT NULL,
-  `postcode` varchar(64) NOT NULL,
-  `country` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+--/*!40101 SET @saved_cs_client     = @@character_set_client */;
+--/*!40101 SET character_set_client = utf8 */;
+--CREATE TABLE `user` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `enitity_service_id` int(11) NOT NULL,
+--  `first_name` varchar(64) NOT NULL,
+--  `last_name` varchar(64) DEFAULT NULL,
+--  `username` varchar(64) NOT NULL,
+--  `password` varchar(64) NOT NULL,
+--  `email` varchar(64) NOT NULL,
+--  `mobile` varchar(64) NOT NULL,
+--  `address` varchar(64) NOT NULL,
+--  `city` varchar(64) NOT NULL,
+--  `state` varchar(64) NOT NULL,
+--  `postcode` varchar(64) NOT NULL,
+--  `country` varchar(64) NOT NULL,
+--  PRIMARY KEY (`id`)
+--) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Other shiz
+--
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -1,13 +1,54 @@
 package lukasync.util;
 
 import lukasync.Lukasync;
-import org.json.JSONObject;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+
 
 public class LukaStore {
+    public static void put(String key, int serviceId, String value) {
+        Connection conn = getConnection();
+        try {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "INSERT INTO registry (`key`, service_id, value) " +
+                            "VALUES (?, ?, ?) " +
+                            "ON DUPLICATE KEY UPDATE " +
+                            "value = VALUES(value)");
+
+            stmt.setString(1, key);
+            stmt.setInt(2, serviceId);
+            stmt.setString(3, value);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Error in SQL");
+        }
+    }
+
+    public static String get(String key, int serviceId) {
+        Connection conn = getConnection();
+        try {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT value FROM registry " +
+                            "WHERE `key` = ?" +
+                            "AND service_id = ?"
+            );
+
+            stmt.setString(1, key);
+            stmt.setInt(2, serviceId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("value");
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Error in SQL");
+        }
+    }
+
     /*
     public void createCustomer (int serviceId, String externalId, JSONObject contact) {
 //        // XXX imported_at and modified_at are present in contact
@@ -82,8 +123,9 @@ public class LukaStore {
         System.out.println("DEBUG: LukaStore.getCreateStatement(): " + sqlString);
         return sqlString;
     }
+    */
 
-    private Connection getConnection () {
+    private static Connection getConnection () {
         try {
             return DriverManager.getConnection(
                     Lukasync.DB,
@@ -97,5 +139,4 @@ public class LukaStore {
 
         return null;
     }
-    */
 }

@@ -37,7 +37,7 @@ public class ZurmoClient extends ServiceClient{
             String sessionId = data.getString("sessionId");
             String token = data.getString("token");
 
-            if (Lukasync.printDebug) {
+            if (Lukasync.PRINT_DEBUG) {
                 System.out.println("\nDEBUG: ZurmoClient built with credentials:");
                 System.out.println("  sessionId: " + sessionId);
                 System.out.println("  token: " + token);
@@ -57,7 +57,7 @@ public class ZurmoClient extends ServiceClient{
         pagination.put("pageSize", 1);
 
         JSONObject search = new JSONObject();
-        search.put("username", username);
+        search.put("username", username.toLowerCase());
 
         JSONObject searchFilter = new JSONObject();
         searchFilter.put("pagination", pagination);
@@ -81,9 +81,13 @@ public class ZurmoClient extends ServiceClient{
                             response.getJSONObject("errors").toString()
             );
 
-        } else {
+        } else if (response.getJSONObject("data").has("items")) {
 
             return response.getJSONObject("data").getJSONArray("items").getJSONObject(0).getInt("id");
+
+        } else {
+
+            return -1;
 
         }
     }
@@ -94,9 +98,8 @@ public class ZurmoClient extends ServiceClient{
                 user.getString("password"),
                 user.getString("firstName"),
                 user.getString("lastName"),
-                user.getString("mobile"),
-                "SOURCE COMPANY HIEEAAA",
-                user.getString("email"),
+                user.getString("mobilePhone"),
+                user.getString("emailAddress"),
                 user.getString("city"),
                 user.getString("postalCode"),
                 DEFAULT_USER_COUNTRY
@@ -110,7 +113,6 @@ public class ZurmoClient extends ServiceClient{
             String firstName,
             String lastName,
             String mobilePhone,
-            String department,
 
             String emailAddress,
 
@@ -134,8 +136,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("password", password);
         data.put("firstName", firstName);
         data.put("lastName", lastName);
-        data.put("mobilePhone", mobilePhone);
-        data.put("department", department);
+        data.put("mobilePhone", normalizePhone(mobilePhone));
 
         JSONObject payload = new JSONObject();
         payload.put("data", data);
@@ -153,11 +154,9 @@ public class ZurmoClient extends ServiceClient{
                 user.getString("firstName"),
                 user.getString("lastName"),
                 user.getString("mobilePhone"),
-                user.getString("department"),
                 user.getString("emailAddress"),
                 user.getString("city"),
-                user.getString("postalCode"),
-                user.getString("country")
+                user.getString("postalCode")
         );
     }
 
@@ -168,20 +167,17 @@ public class ZurmoClient extends ServiceClient{
             String firstName,
             String lastName,
             String mobilePhone,
-            String department,
 
             String emailAddress,
 
             String city,
-            String postalCode,
-            String country) {
+            String postalCode) {
         JSONObject primaryEmail = new JSONObject();
         primaryEmail.put("emailAddress", emailAddress);
 
         JSONObject primaryAddress = new JSONObject();
         primaryAddress.put("city", city);
         primaryAddress.put("postalCode", postalCode);
-        primaryAddress.put("country", country);
 
         JSONObject data = new JSONObject();
         data.put("primaryEmail", primaryEmail);
@@ -190,8 +186,7 @@ public class ZurmoClient extends ServiceClient{
         data.put("password", password);
         data.put("firstName", firstName);
         data.put("lastName", lastName);
-        data.put("mobilePhone", mobilePhone);
-        data.put("department", department);
+        data.put("mobilePhone", normalizePhone(mobilePhone));
 
         JSONObject payload = new JSONObject();
         payload.put("data", data);
@@ -208,13 +203,13 @@ public class ZurmoClient extends ServiceClient{
         pagination.put("pageSize", 1);
 
         JSONObject search = new JSONObject();
-        search.put("officeFax", customerNo);
+        search.put("officePhone", customerNo);
 
         JSONObject searchFilter = new JSONObject();
         searchFilter.put("pagination", pagination);
         searchFilter.put("search", search);
 
-        searchFilter.put("sort", "officeFax.asc");
+        searchFilter.put("sort", "officePhone.asc");
 
         HashMap<String, String> headers = getDefaultHeaders();
         String searchFilterString = JSONUtil.jsonToURLEncoding(searchFilter);
@@ -255,7 +250,7 @@ public class ZurmoClient extends ServiceClient{
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
                 contact.getString("department"),
-                contact.getString("officeFax"),
+                contact.getString("customerNo"),
                 primaryEmail.getString("emailAddress"),
                 primaryEmail.getString("optOut"),
                 primaryAddress.getString("street1"),
@@ -274,7 +269,7 @@ public class ZurmoClient extends ServiceClient{
             String lastName,
             String mobilePhone,
             String department,
-            String officeFax,
+            String customerNo,
 
             String emailAddress,
             String optOut,
@@ -302,7 +297,7 @@ public class ZurmoClient extends ServiceClient{
         owner.put("id", ownerId);
 
         JSONObject status = new JSONObject();
-        status.put("id", 6);
+        status.put("id", 7);
 
         JSONObject data = new JSONObject();
         data.put("primaryEmail", primaryEmail);
@@ -312,9 +307,9 @@ public class ZurmoClient extends ServiceClient{
 
         data.put("firstName", firstName);
         data.put("lastName", lastName);
-        data.put("mobilePhone", mobilePhone);
+        data.put("mobilePhone", normalizePhone(mobilePhone));
         data.put("department", department);
-        data.put("officeFax", officeFax);
+        data.put("officePhone", customerNo);
 
         JSONObject payload = new JSONObject();
         payload.put("data", data);
@@ -336,7 +331,7 @@ public class ZurmoClient extends ServiceClient{
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
                 contact.getString("department"),
-                contact.getString("officeFax"),
+                contact.getString("customerNo"),
                 contact.getString("emailAddress"),
                 contact.getString("optOut"),
                 contact.getString("street1"),
@@ -356,7 +351,7 @@ public class ZurmoClient extends ServiceClient{
             String lastName,
             String mobilePhone,
             String department,
-            String officeFax,
+            String customerNo,
 
             String emailAddress,
             String optOut,
@@ -384,9 +379,9 @@ public class ZurmoClient extends ServiceClient{
 
         data.put("firstName", firstName);
         data.put("lastName", lastName);
-        data.put("mobilePhone", mobilePhone);
+        data.put("mobilePhone", normalizePhone(mobilePhone));
         data.put("department", department);
-        data.put("officeFax", officeFax);
+        data.put("officePhone", customerNo);
         JSONObject owner = new JSONObject();
 
         owner.put("id", ownerId);
@@ -462,7 +457,7 @@ public class ZurmoClient extends ServiceClient{
         JSONObject payload = new JSONObject();
         payload.put("data", data);
 
-        if (Lukasync.printDebug) {
+        if (Lukasync.PRINT_DEBUG) {
             System.out.println(payload.toString());
             //System.out.println(JSONUtil.jsonToURLEncoding(payload));
         }
@@ -497,6 +492,10 @@ public class ZurmoClient extends ServiceClient{
 
         JSONObject response = Rest.jsonPut(requestURL, headers, payload);
         voidResponse(response);
+    }
+
+    private static String normalizePhone (String mobilePhone) {
+        return (mobilePhone.length() > 24) ? mobilePhone.substring(0, 24) : mobilePhone;
     }
 
     private HashMap<String, String> getDefaultHeaders() {

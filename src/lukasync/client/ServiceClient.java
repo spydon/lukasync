@@ -22,5 +22,9 @@ public abstract class ServiceClient {
         init();
     }
 
+    public final int getId() {
+        return id;
+    }
+
     protected abstract void init();
 }

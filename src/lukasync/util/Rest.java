@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 public class Rest {
     public static JSONObject jsonGet(String urlStr, HashMap<String, String> headers) {
-        if (Lukasync.printDebug) {
+        if (Lukasync.PRINT_DEBUG) {
             System.out.println("\n DEBUG: making GET request");
             System.out.println("  url: " + urlStr);
             System.out.println("  headers: " + headers.toString());
@@ -42,7 +42,7 @@ public class Rest {
             HttpClient client = HttpClientBuilder.create().build();
             HttpResponse response = client.execute(get);
 
-            if (Lukasync.printDebug) {
+            if (Lukasync.PRINT_DEBUG) {
                 //debugResponse(response);
             }
 
@@ -51,7 +51,7 @@ public class Rest {
                 IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
                 String result = writer.toString();
 
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                     System.out.println("DEBUG: response entity: " + result);
                 }
 
@@ -78,7 +78,7 @@ public class Rest {
     }
 
     public static JSONObject jsonPost(String urlStr, HashMap<String, String> headers, JSONObject payload) {
-        if (Lukasync.printDebug) {
+        if (Lukasync.PRINT_DEBUG) {
             System.out.println("\nDEBUG: making POST request");
             System.out.println("  url: " + urlStr);
             System.out.println("  headers: " + headers.toString());
@@ -97,7 +97,7 @@ public class Rest {
                     post.addHeader(key, headers.get(key));
 
             if (payload != null) {
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                     System.out.println("DEBUG: POSTing payload: " + JSONUtil.jsonToURLEncoding(payload));
                 }
 
@@ -108,7 +108,7 @@ public class Rest {
             HttpClient client = HttpClientBuilder.create().build();
             HttpResponse response = client.execute(post);
 
-            if (Lukasync.printDebug) {
+            if (Lukasync.PRINT_DEBUG) {
                 //debugResponse(response);
             }
 
@@ -117,7 +117,7 @@ public class Rest {
                 IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
                 String result = writer.toString();
 
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                     System.out.println("DEBUG: response entity: " + result);
                 }
 
@@ -140,7 +140,7 @@ public class Rest {
     }
 
     public static JSONObject jsonPut(String urlStr, HashMap<String, String> headers, JSONObject payload) {
-        if (Lukasync.printDebug) {
+        if (Lukasync.PRINT_DEBUG) {
             System.out.println("\nDEBUG: making PUT request");
             System.out.println("  url: " + urlStr);
             System.out.println("  headers: " + headers.toString());
@@ -159,7 +159,7 @@ public class Rest {
                     put.addHeader(key, headers.get(key));
 
             if (payload != null) {
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                     System.out.println("DEBUG: PUTing payload: " + JSONUtil.jsonToURLEncoding(payload));
                 }
 
@@ -170,7 +170,7 @@ public class Rest {
             HttpClient client = HttpClientBuilder.create().build();
             HttpResponse response = client.execute(put);
 
-            if (Lukasync.printDebug) {
+            if (Lukasync.PRINT_DEBUG) {
                 //debugResponse(response);
             }
 
@@ -179,7 +179,7 @@ public class Rest {
                 IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
                 String result = writer.toString();
 
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                    System.out.println("DEBUG: response entity: " + result);
                 }
 
@@ -189,7 +189,7 @@ public class Rest {
                 IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
                 String result = writer.toString();
 
-                if (Lukasync.printDebug) {
+                if (Lukasync.PRINT_DEBUG) {
                     System.out.println("DEBUG: response entity: " + result);
                 }
 

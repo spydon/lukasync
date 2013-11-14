@@ -20,7 +20,7 @@ public class Lukasync {
     public static long INITIAL_WAIT = 0;
     public static long WAIT = 60000;
 
-    public static final boolean printDebug = true;
+    public static final boolean PRINT_DEBUG = true;
 
 
     public static void main(String[] args) {
@@ -166,7 +166,7 @@ public class Lukasync {
 
             QueryBuilder serviceFlowsQuery = new QueryBuilder(
                     "source, destination",
-                    "service_flows",
+                    "service_flow",
                     "",
                     "",
                     ""
