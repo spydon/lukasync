@@ -237,6 +237,108 @@ public class EvoposClient extends ServiceClient {
         return sales;
     }
 
+    public void insertNewSale(JSONObject sale) {
+        insertNewSale(sale.getString("username"), sale.getDouble("gross"), sale.getString("createdAt"));
+    }
+
+    public void insertNewSale(String username, double gross, String saleDate) {
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps;
+
+            ps = conn.prepareStatement(
+                    "INSERT INTO Sales_Transactions_Header "
+                        + "(Transaction_No, "
+                        + "Sub_Type_ID, "
+                        + "Type_Description, "
+                        + "Sales_Sub_Type, "
+                        + "Sales_Type, "
+                        + "Operator_ID, "
+                        + "Operator_Name, "
+                        + "SoldTo_Name, "
+                        + "Sale_Date, "
+                        + "Net, "
+                        + "Gross, "
+                        + "Branch_ID, "
+                        + "Draw_No, "
+                        + "Modified_User) "
+                    + "VALUES "
+                        + "(?," //Transaction_No, has to be calculated
+                        + "9,"
+                        + "'ONLINE',"
+                        + "'ONLINE',"
+                        + "'ONLINE',"
+                        + "?,"  //Operator_Id, has to be calculated
+                        + "?,"  //Operator_Name, from JSON
+                        + "'ONLINE',"
+                        + "?,"  //Sale_Date, from JSON
+                        + "?,"  //Net, has to be calculated
+                        + "?,"  //Gross, from JSON
+                        + "0,"
+                        + "1,"
+                        + "'lukasync')");
+            ps.setInt(1, getLastTransactionNo()+1);     //"transaction_no"
+            ps.setInt(2, getUserId(username));
+            ps.setString(3, username);
+            ps.setString(4, saleDate); //"sale_date"
+            ps.setDouble(5, gross*0.9);//"net"
+            ps.setDouble(6, gross);//"gross"
+
+            int result = ps.executeUpdate();
+            if(result != 1)
+                throw new IllegalArgumentException("Not a valid number of users modified - " + result);
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getUserId(String username) {
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps;
+            QueryBuilder q = new QueryBuilder("id", "operators", "Short_Name = " + username, "", "");
+            ps = conn.prepareStatement(q.getQuery());
+
+            ResultSet result = ps.executeQuery();
+            ps.close();
+            conn.close();
+            if(!result.next())
+                throw new IllegalArgumentException("Not a valid username");
+            else
+                return result.getInt(0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; //Will never reach this point
+    }
+
+    private int getLastTransactionNo() {
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps;
+            QueryBuilder q = new QueryBuilder(
+                    "TOP 1 transaction_no",
+                    "Sales_Transactions_Header",
+                    "transaction_no > 1337000000 AND transaction_no < 1338000000",
+                    "",
+                    "transaction_no desc");
+            ps = conn.prepareStatement(q.getQuery());
+
+            ResultSet result = ps.executeQuery();
+            ps.close();
+            conn.close();
+            if(!result.next())
+                throw new IllegalArgumentException("Not a valid username");
+            else
+                return result.getInt(0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; //Will never reach this point
+    }
+
     private Connection getConnection() {
         Connection conn = null;
         try {
