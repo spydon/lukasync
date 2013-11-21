@@ -9,21 +9,10 @@ import lukasync.util.LukaStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-
 public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
-    //public static final String UPDATE_TIME = "2013-11-01";
-    public static final String UPDATE_TIME = "1990-12-31";
-
-    private ArrayList<String> issues;
-
-    public EvoposToZurmoJob(EvoposClient source, ZurmoClient destination) {
-        super(source, destination);
-
-        issues = new ArrayList<>();
+    public EvoposToZurmoJob(int jobId, EvoposClient source, ZurmoClient destination) {
+        super(jobId, source, destination);
     }
 
     @Override
@@ -34,66 +23,40 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
         try {
             copyNewUsers();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyNewUsers:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyNewUsers", t);
         }
 
         try {
             copyUpdatedUsers();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyUpdatedUsers:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyUpdatedUsers", t);
         }
 
         try {
-            //copyNewContacts();
+            copyNewContacts();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyNewContacts:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyNewContacts", t);
         }
 
         try {
             copyUpdatedContacts();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyUpdatedContacts:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyUpdatedContacts", t);
         }
 
         try {
-            //copyContactRelations();
+            copyContactRelations();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyContactRelations:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyContactRelations", t);
         }
 
         try {
-            //copyNewTransactions();
+            copyNewTransactions();
         } catch (Throwable t) {
-            StringWriter errors = new StringWriter();
-            t.printStackTrace(new PrintWriter(errors));
-
-            issues.add("\ncopyNewTransactions:\n" + t.getMessage() + "\n" + errors.toString());
+            addIssue("copyNewTransactions", t);
         }
 
-        if (Lukasync.PRINT_DEBUG) {
-            System.out.println("\n\nEvoposToZurmoJob finished with " + issues.size() + " issues.");
-
-            if (issues.size() > 0) {
-                for (String issue : issues) {
-                    System.out.println(issue);
-                }
-            }
-        }
+        printFinish("EvoposToZurmoJob");
 
         return null;
     }
@@ -104,9 +67,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyNewUsers () {
         String storeKey = "copyNewUsers.lastModified";
-        int sourceId = source.getId();
-        //JSONArray newUsers = source.getNewUsers(LukaStore.get(storeKey, sourceId));
-        JSONArray newUsers = source.getNewUsers(UPDATE_TIME);
+        //JSONArray newUsers = source.getNewUsers(LukaStore.get(storeKey, jobId));
+        JSONArray newUsers = source.getNewUsers(Lukasync.UPDATE_TIME);
 
         System.out.println("DEBUG: copyNewUsers():");
         JSONUtil.prettyPrint(newUsers);
@@ -114,15 +76,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
         for (int i = 0; i < newUsers.length(); i++) {
             JSONObject newUser = newUsers.getJSONObject(i);
             destination.createUser(newUser);
-            LukaStore.put(storeKey, sourceId, newUser.getString("modified_at"));
+            LukaStore.put(storeKey, jobId, newUser.getString("modified_at"));
         }
     }
 
     private void copyUpdatedUsers () {
         String storeKey = "copyUpdatedUsers.lastModified";
-        int sourceId = source.getId();
-        //JSONArray updatedUsers = source.getUpdatedUsers(LukaStore.get(storeKey, sourceId));
-        JSONArray updatedUsers = source.getUpdatedUsers(UPDATE_TIME);
+        //JSONArray updatedUsers = source.getUpdatedUsers(LukaStore.get(storeKey, jobId));
+        JSONArray updatedUsers = source.getUpdatedUsers(Lukasync.UPDATE_TIME);
 
         System.out.println("DEBUG: copyUpdatedUsers():");
         JSONUtil.prettyPrint(updatedUsers);
@@ -132,15 +93,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
             int userId = destination.getUserIdByUsername(updatedUser.getString("username"));
 
             destination.updateUser(userId, updatedUser);
-            LukaStore.put(storeKey, sourceId, updatedUser.getString("modified_at"));
+            LukaStore.put(storeKey, jobId, updatedUser.getString("modified_at"));
         }
     }
 
     private void copyNewContacts () {
         String storeKey = "copyNewContacts.lastModified";
-        int sourceId = source.getId();
-        //JSONArray newContacts = source.getNewContacts(LukaStore.get(storeKey, sourceId));
-        JSONArray newContacts = source.getNewContacts(UPDATE_TIME);
+        //JSONArray newContacts = source.getNewContacts(LukaStore.get(storeKey, jobId));
+        JSONArray newContacts = source.getNewContacts(Lukasync.UPDATE_TIME);
 
         System.out.println("DEBUG: copyNewContacts():");
         JSONUtil.prettyPrint(newContacts);
@@ -148,15 +108,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
         for (int i = 0; i < newContacts.length(); i++) {
             JSONObject newContact = newContacts.getJSONObject(i);
             destination.createContact(newContact);
-            LukaStore.put(storeKey, sourceId, newContact.getString("modified_at"));
+            LukaStore.put(storeKey, jobId, newContact.getString("modified_at"));
         }
     }
 
     private void copyUpdatedContacts () {
         String storeKey = "copyUpdatedContacts.lastModified";
-        int sourceId = source.getId();
-        //JSONArray updatedContacts = source.getUpdatedContacts(LukaStore.get(storeKey, sourceId));
-        JSONArray updatedContacts = source.getUpdatedContacts(UPDATE_TIME);
+        //JSONArray updatedContacts = source.getUpdatedContacts(LukaStore.get(storeKey, jobId));
+        JSONArray updatedContacts = source.getUpdatedContacts(Lukasync.UPDATE_TIME);
 
         System.out.println("DEBUG: copyUpdatedContacts():");
         JSONUtil.prettyPrint(updatedContacts);
@@ -165,15 +124,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
             JSONObject updatedContact = updatedContacts.getJSONObject(i);
             int contactId = destination.getContactIdByCustomerNo(updatedContact.getString("customer_no"));
             destination.updateContact(contactId, updatedContact);
-            LukaStore.put(storeKey, sourceId, updatedContact.getString("modified_at"));
+            LukaStore.put(storeKey, jobId, updatedContact.getString("modified_at"));
         }
     }
 
     private void copyContactRelations () {
         String storeKey = "copyContactRelations.lastModified";
-        int sourceId = source.getId();
-        //JSONArray newContactRelations = source.getNewContactRelations(LukaStore.get(storeKey, sourceId));
-        JSONArray newContactRelations = source.getNewContactRelations(UPDATE_TIME);
+        //JSONArray newContactRelations = source.getNewContactRelations(LukaStore.get(storeKey, jobId));
+        JSONArray newContactRelations = source.getNewContactRelations(Lukasync.UPDATE_TIME);
 
         JSONUtil.prettyPrint(newContactRelations);
 
@@ -204,15 +162,14 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
                     contactId,
                     newOwnerId
             );
-            LukaStore.put(storeKey, sourceId, newContactRelation.getString("modified_at"));
+            LukaStore.put(storeKey, jobId, newContactRelation.getString("modified_at"));
         }
     }
 
     private void copyNewTransactions () {
         String storeKey = "copyNewTransactions.lastModified";
-        int sourceId = source.getId();
-        //JSONArray saleLines = source.getNewSales(LukaStore.get(storeKey, sourceId));
-        JSONArray saleLines = source.getNewSales(UPDATE_TIME); // TODO keep track of latest know transaction date
+        //JSONArray saleLines = source.getNewSales(LukaStore.get(storeKey, jobId));
+        JSONArray saleLines = source.getNewSales(Lukasync.UPDATE_TIME); // TODO keep track of latest know transaction date
 
         StringBuilder sb = new StringBuilder();
         String modifiedDate = "";
@@ -245,7 +202,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
                 if (!currentTransactionNo.equals(nextTransactionNo)) {
                     createNoteForTransaction(sb, currentSaleLine, currentTransactionNo);
-                    LukaStore.put(storeKey, sourceId, modifiedDate);
+                    LukaStore.put(storeKey, jobId, modifiedDate);
                 }
             } else {
                 createNoteForTransaction(sb, currentSaleLine, currentTransactionNo);

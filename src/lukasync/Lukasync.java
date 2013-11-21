@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.concurrent.TimeUnit;
 
+import lukasync.client.MagentoClient;
 import lukasync.service.Scheduler;
 import lukasync.service.SyncTask;
 import lukasync.util.QueryBuilder;
@@ -14,6 +15,8 @@ import org.json.JSONObject;
 
 public class Lukasync {
 
+    //public static final String UPDATE_TIME = "2013-11-01";
+    public static final String UPDATE_TIME = "1990-12-31";
     public static String DB = "jdbc:mysql://londonsales.com.au/lukasync";
     public static String USER = "lukasync";
     public static String PASS = "Daniel1985";
@@ -21,7 +24,7 @@ public class Lukasync {
     public static long WAIT = 60000;
 
     public static final boolean PRINT_DEBUG = true;
-
+    public static final boolean MODE_DEV = false;
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -117,11 +120,15 @@ public class Lukasync {
         System.out.println("    This software was coded by Lukas Klingsbo(lukas.klingsbo@gmail.com)");
         System.out.println("    and Emilio Nyaray(emilio@nyaray.com)");
 
-        Scheduler scheduler = new Scheduler();
-        scheduler.scheduleWithFixedDelay(new SyncTask(),
-                INITIAL_WAIT,
-                WAIT,
-                TimeUnit.MILLISECONDS);
+        if (MODE_DEV) {
+            throw new IllegalStateException("No dev-testing code in place, lol!"); // comment this out when testing
+        } else {
+            Scheduler scheduler = new Scheduler();
+            scheduler.scheduleWithFixedDelay(new SyncTask(),
+                    INITIAL_WAIT,
+                    WAIT,
+                    TimeUnit.MILLISECONDS);
+        }
     }
 
     public static JSONObject fetchConfig() {
@@ -165,7 +172,7 @@ public class Lukasync {
             servicesStatement.close();
 
             QueryBuilder serviceFlowsQuery = new QueryBuilder(
-                    "source, destination",
+                    "id, source, destination",
                     "service_flow",
                     "",
                     "",
@@ -175,14 +182,20 @@ public class Lukasync {
             String serviceFlowsQueryString = serviceFlowsQuery.getQuery();
             PreparedStatement serviceFlowsStatement = conn.prepareStatement(serviceFlowsQueryString);
 
+            JSONObject jobs = new JSONObject();
             ResultSet serviceFlowsResult = serviceFlowsStatement.executeQuery();
             while (serviceFlowsResult.next()) {
-                String sourceServiceKey = "" + serviceFlowsResult.getInt("source");
-                JSONObject service = conf.getJSONObject(sourceServiceKey);
+                String sourceKey = "" + serviceFlowsResult.getInt("source");
+                JSONObject service = conf.getJSONObject(sourceKey);
 
                 JSONArray destinations = service.getJSONArray("destinations");
-                destinations.put("" + serviceFlowsResult.getInt("destination"));
+                String destinationKey = "" + serviceFlowsResult.getInt("destination");
+
+                jobs.put(getJobKey(sourceKey, destinationKey), serviceFlowsResult.getInt("id"));
+                destinations.put(destinationKey);
             }
+
+            conf.put("jobs", jobs);
 
             serviceFlowsResult.close();
             serviceFlowsStatement.close();
@@ -194,5 +207,13 @@ public class Lukasync {
         }
 
         return conf;
+    }
+
+    public static String getJobKey (String sourceKey, String destinationKey) {
+        return sourceKey + ":" + destinationKey;
+    }
+
+    public static String getJobKey (int sourceKey, int destinationKey) {
+        return getJobKey(""+sourceKey, ""+destinationKey);
     }
 }
