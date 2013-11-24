@@ -150,9 +150,9 @@ public class MagentoClient extends ServiceClient {
                 String createdAt = e.getCreatedAt();
 
                 JSONObject eJSON = new JSONObject();
-                eJSON.put("operator_name", operatorName);
+                eJSON.put("username", operatorName);
                 eJSON.put("gross", gross);
-                eJSON.put("created_at", createdAt);
+                eJSON.put("createdAt", createdAt);
 
                 result.put(eJSON);
             }
