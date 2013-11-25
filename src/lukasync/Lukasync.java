@@ -172,7 +172,7 @@ public class Lukasync {
             servicesStatement.close();
 
             QueryBuilder serviceFlowsQuery = new QueryBuilder(
-                    "id, source, destination",
+                    "id, source, destination, enabled",
                     "service_flow",
                     "",
                     "",
@@ -188,7 +188,7 @@ public class Lukasync {
                 String sourceKey = "" + serviceFlowsResult.getInt("source");
                 JSONObject service = conf.getJSONObject(sourceKey);
 
-                if (service.getBoolean("enabled")) {
+                if (serviceFlowsResult.getBoolean("enabled")) {
                     JSONArray destinations = service.getJSONArray("destinations");
                     String destinationKey = "" + serviceFlowsResult.getInt("destination");
 
