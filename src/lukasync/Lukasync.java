@@ -188,11 +188,13 @@ public class Lukasync {
                 String sourceKey = "" + serviceFlowsResult.getInt("source");
                 JSONObject service = conf.getJSONObject(sourceKey);
 
-                JSONArray destinations = service.getJSONArray("destinations");
-                String destinationKey = "" + serviceFlowsResult.getInt("destination");
+                if (service.getBoolean("enabled")) {
+                    JSONArray destinations = service.getJSONArray("destinations");
+                    String destinationKey = "" + serviceFlowsResult.getInt("destination");
 
-                jobs.put(getJobKey(sourceKey, destinationKey), serviceFlowsResult.getInt("id"));
-                destinations.put(destinationKey);
+                    jobs.put(getJobKey(sourceKey, destinationKey), serviceFlowsResult.getInt("id"));
+                    destinations.put(destinationKey);
+                }
             }
 
             conf.put("jobs", jobs);
