@@ -138,11 +138,10 @@ public class MagentoClient extends ServiceClient {
     }
 
     private JSONArray unmarshallResult (SalesOrderListEntityArray entityArray) {
-        JSONArray result = null;
+        JSONArray result = new JSONArray();
 
         List<SalesOrderListEntity> salesOrderListEntities = entityArray.getComplexObjectArray();
         if (salesOrderListEntities.size() > 0) {
-            result = new JSONArray();
 
             for (SalesOrderListEntity e : salesOrderListEntities) {
                 String operatorName = e.getCustomerEmail().split("@")[0];
