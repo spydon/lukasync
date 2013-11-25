@@ -238,10 +238,10 @@ public class EvoposClient extends ServiceClient {
     }
 
     public void insertNewSale(JSONObject sale) {
-        insertNewSale(sale.getString("username"), sale.getDouble("gross"), sale.getString("createdAt"));
+        insertNewSale(sale.getString("username"), sale.getString("gross"), sale.getString("createdAt"));
     }
 
-    public void insertNewSale(String username, double gross, String saleDate) {
+    public void insertNewSale(String username, String gross, String saleDate) {
         try {
             Connection conn = getConnection();
             PreparedStatement ps;
@@ -281,12 +281,13 @@ public class EvoposClient extends ServiceClient {
             ps.setInt(2, getUserId(username));
             ps.setString(3, username);
             ps.setString(4, saleDate); //"sale_date"
-            ps.setDouble(5, gross*0.9);//"net"
-            ps.setDouble(6, gross);//"gross"
+            ps.setDouble(5, Double.parseDouble(gross)*0.9);//"net"
+            ps.setDouble(6, Double.parseDouble(gross));//"gross"
 
-            int result = ps.executeUpdate();
-            if(result != 1)
-                throw new IllegalArgumentException("Not a valid number of users modified - " + result);
+            System.out.println(ps);
+//            int result = ps.executeUpdate();
+//            if(result != 1)
+//                throw new IllegalArgumentException("Not a valid number of users modified - " + result);
             ps.close();
             conn.close();
         } catch (SQLException e) {
@@ -302,12 +303,17 @@ public class EvoposClient extends ServiceClient {
             ps = conn.prepareStatement(q.getQuery());
 
             ResultSet result = ps.executeQuery();
-            ps.close();
-            conn.close();
-            if(!result.next())
+
+            if(!result.next()) {
+                ps.close();
+                conn.close();
                 throw new IllegalArgumentException("Not a valid username");
-            else
-                return result.getInt(0);
+            } else {
+                int userId = result.getInt(0);
+                ps.close();
+                conn.close();
+                return userId;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -327,12 +333,17 @@ public class EvoposClient extends ServiceClient {
             ps = conn.prepareStatement(q.getQuery());
 
             ResultSet result = ps.executeQuery();
-            ps.close();
-            conn.close();
-            if(!result.next())
-                throw new IllegalArgumentException("Not a valid username");
-            else
-                return result.getInt(0);
+
+            if(result.next()) {
+                ps.close();
+                conn.close();
+                throw new IllegalArgumentException("Could not fetch last transaction number");
+            } else {
+                ps.close();
+                conn.close();
+//                return result.getInt(0);
+                return 1337000000;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

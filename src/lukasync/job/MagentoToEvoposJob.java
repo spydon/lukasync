@@ -1,17 +1,18 @@
 package lukasync.job;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import lukasync.Lukasync;
 import lukasync.client.EvoposClient;
 import lukasync.client.MagentoClient;
 import lukasync.util.JSONUtil;
 import lukasync.util.LukaStore;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 public class MagentoToEvoposJob extends Job<MagentoClient, EvoposClient> {
 

@@ -1,12 +1,29 @@
 package lukasync.client;
 
+import java.util.List;
+
 import lukasync.Lukasync;
-import lukasync.magentoclient.*;
+import lukasync.magentoclient.AssociativeArray;
+import lukasync.magentoclient.AssociativeEntity;
+import lukasync.magentoclient.ComplexFilter;
+import lukasync.magentoclient.ComplexFilterArray;
+import lukasync.magentoclient.CustomerCustomerCreateRequestParam;
+import lukasync.magentoclient.CustomerCustomerCreateResponseParam;
+import lukasync.magentoclient.CustomerCustomerEntityToCreate;
+import lukasync.magentoclient.Filters;
+import lukasync.magentoclient.LoginParam;
+import lukasync.magentoclient.LoginResponseParam;
+import lukasync.magentoclient.MageApiModelServerWsiHandlerPortType;
+import lukasync.magentoclient.MagentoService;
+import lukasync.magentoclient.ObjectFactory;
+import lukasync.magentoclient.SalesOrderListEntity;
+import lukasync.magentoclient.SalesOrderListEntityArray;
+import lukasync.magentoclient.SalesOrderListRequestParam;
+import lukasync.magentoclient.SalesOrderListResponseParam;
 import lukasync.util.JSONUtil;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.List;
 
 public class MagentoClient extends ServiceClient {
     private MagentoService magentoService;
@@ -146,7 +163,7 @@ public class MagentoClient extends ServiceClient {
 
             for (SalesOrderListEntity e : salesOrderListEntities) {
                 String operatorName = e.getCustomerEmail().split("@")[0];
-                String gross = e.getTotalInvoiced(); // TODO is this what we want?
+                String gross = e.getGrandTotal();// getTotalInvoiced(); // TODO is this what we want?
                 String createdAt = e.getCreatedAt();
 
                 JSONObject eJSON = new JSONObject();
