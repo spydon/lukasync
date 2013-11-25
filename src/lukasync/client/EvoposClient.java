@@ -284,10 +284,10 @@ public class EvoposClient extends ServiceClient {
             ps.setDouble(5, Double.parseDouble(gross)*0.9);//"net"
             ps.setDouble(6, Double.parseDouble(gross));//"gross"
 
-            System.out.println(ps);
-//            int result = ps.executeUpdate();
-//            if(result != 1)
-//                throw new IllegalArgumentException("Not a valid number of users modified - " + result);
+//            System.out.println(ps);
+            int result = ps.executeUpdate();
+            if(result != 1)
+                throw new IllegalArgumentException("Not a valid number of users modified - " + result);
             ps.close();
             conn.close();
         } catch (SQLException e) {
@@ -299,7 +299,7 @@ public class EvoposClient extends ServiceClient {
         try {
             Connection conn = getConnection();
             PreparedStatement ps;
-            QueryBuilder q = new QueryBuilder("id", "operators", "Short_Name = " + username, "", "");
+            QueryBuilder q = new QueryBuilder("id", "operators", "Short_Name = '" + username + "'", "", "");
             ps = conn.prepareStatement(q.getQuery());
 
             ResultSet result = ps.executeQuery();
@@ -309,7 +309,7 @@ public class EvoposClient extends ServiceClient {
                 conn.close();
                 throw new IllegalArgumentException("Not a valid username");
             } else {
-                int userId = result.getInt(0);
+                int userId = result.getInt("id");
                 ps.close();
                 conn.close();
                 return userId;
@@ -334,15 +334,15 @@ public class EvoposClient extends ServiceClient {
 
             ResultSet result = ps.executeQuery();
 
-            if(result.next()) {
+            if(!result.next()) {
                 ps.close();
                 conn.close();
                 throw new IllegalArgumentException("Could not fetch last transaction number");
             } else {
+                int transactionNumber = result.getInt("transaction_no");
                 ps.close();
                 conn.close();
-//                return result.getInt(0);
-                return 1337000000;
+                return transactionNumber;
             }
         } catch (SQLException e) {
             e.printStackTrace();

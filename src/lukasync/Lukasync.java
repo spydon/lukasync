@@ -6,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.concurrent.TimeUnit;
 
-import lukasync.client.MagentoClient;
 import lukasync.service.Scheduler;
 import lukasync.service.SyncTask;
 import lukasync.util.QueryBuilder;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
