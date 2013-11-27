@@ -31,7 +31,7 @@ public class EvoposClient extends ServiceClient {
                 + "formatted_address, country, customer_No, send_mail, staff_id, date_created, Contacts_Persons.modified_date",
                 "Contacts_Persons "
                 + "INNER JOIN Contacts ON Contacts.id = Contacts_Persons.contact_id",
-                "LEN(Customer_No) > 11", //TODO: Change this to ~10
+                "LEN(Customer_No) > 11", // XXX: Keep in sync with the contactRelationQuery length
                 "",
                 "Contacts_Persons.modified_date asc"
                 );
@@ -44,7 +44,7 @@ public class EvoposClient extends ServiceClient {
                 + "INNER JOIN Contacts ON SoldTo_ID = Contacts.ID WHERE SoldTo_ID > 10 "
                 + "GROUP BY SoldTo_ID, Customer_No) X ON H.SoldTo_ID = X.SoldTo_ID AND H.Modified_Date = X.first_occurence) P "
                 + "INNER JOIN Operators ON Operator_ID = Operators.ID",
-                "LEN(Customer_No) > 11", // TODO Change this to ~10, see contactQuery
+                "LEN(Customer_No) > 11", // XXX: Keep in sync with the contactQuery length
                 "",
                 "");
         this.salesQuery = new QueryBuilder(
@@ -132,7 +132,7 @@ public class EvoposClient extends ServiceClient {
             else
                 contactQuery.appendWhere("DATEADD(dd, 2, date_created) < Contacts_Persons.modified_date");
 
-            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime; //TODO: Change 0 to null
+            updateTime = (updateTime == null || updateTime.equals("0")) ? "1990-12-31" : updateTime;
             contactQuery.appendWhere("Contacts_Persons.modified_date>" + "'" + updateTime + "'");
             System.out.println("DEBUG: contactQuery - " + contactQuery.getQuery());
             ps = conn.prepareStatement(contactQuery.getQuery());

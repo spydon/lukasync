@@ -15,16 +15,16 @@ import org.json.JSONObject;
 
 public class Lukasync {
 
-    //public static final String UPDATE_TIME = "2013-11-01";
-    public static final String UPDATE_TIME = "1990-12-31";
+    public static final boolean PRINT_DEBUG = true;
+    public static final boolean MODE_DEV = false;
+    public static final String INITIAL_IMPORT_UPDATE_TIME = "1990-12-31";
+
     public static String DB = "jdbc:mysql://londonsales.com.au/lukasync";
     public static String USER = "lukasync";
     public static String PASS = "Daniel1985";
+
     public static long INITIAL_WAIT = 0;
     public static long WAIT = 60000;
-
-    public static final boolean PRINT_DEBUG = true;
-    public static final boolean MODE_DEV = false;
 
     public static void main(String[] args) {
         if (args.length > 0) {

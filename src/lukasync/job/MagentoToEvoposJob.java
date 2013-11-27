@@ -37,10 +37,10 @@ public class MagentoToEvoposJob extends Job<MagentoClient, EvoposClient> {
 
     private void copyNewSales () {
         String storeKey = "copyNewSales.latestCreatedAt";
-        //JSONArray newSales = source.getNewSales(6, LukaStore.get(storeKey, jobId));
-        JSONArray newSales = source.getNewSales(6, Lukasync.UPDATE_TIME); // TODO make this a global constant
+        String createdAt = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray newSales = source.getNewSales(6, createdAt);
 
-        List<JSONObject> saleList = new ArrayList<JSONObject>();
+        List<JSONObject> saleList = new ArrayList<>();
         for (int i = 0; i < newSales.length(); i++) {
             saleList.add(newSales.getJSONObject(i));
         }

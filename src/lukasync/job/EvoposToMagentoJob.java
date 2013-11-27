@@ -31,8 +31,8 @@ public class EvoposToMagentoJob extends Job<EvoposClient, MagentoClient> {
 
     private void copyNewUsers () {
         String storeKey = "copyNewUsers.lastModified";
-        //JSONArray newUsers = source.getNewUsers(LukaStore.get(storeKey, jobId));
-        JSONArray newUsers = source.getNewUsers(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray newUsers = source.getNewUsers(updateTime);
 
         System.out.println("DEBUG: copyNewUsers():");
         JSONUtil.prettyPrint(newUsers);

@@ -67,8 +67,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyNewUsers () {
         String storeKey = "copyNewUsers.lastModified";
-        //JSONArray newUsers = source.getNewUsers(LukaStore.get(storeKey, jobId));
-        JSONArray newUsers = source.getNewUsers(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray newUsers = source.getNewUsers(updateTime);
 
         System.out.println("DEBUG: copyNewUsers():");
         JSONUtil.prettyPrint(newUsers);
@@ -82,8 +82,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyUpdatedUsers () {
         String storeKey = "copyUpdatedUsers.lastModified";
-        //JSONArray updatedUsers = source.getUpdatedUsers(LukaStore.get(storeKey, jobId));
-        JSONArray updatedUsers = source.getUpdatedUsers(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray updatedUsers = source.getUpdatedUsers(updateTime);
 
         System.out.println("DEBUG: copyUpdatedUsers():");
         JSONUtil.prettyPrint(updatedUsers);
@@ -99,8 +99,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyNewContacts () {
         String storeKey = "copyNewContacts.lastModified";
-        //JSONArray newContacts = source.getNewContacts(LukaStore.get(storeKey, jobId));
-        JSONArray newContacts = source.getNewContacts(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray newContacts = source.getNewContacts(updateTime);
 
         System.out.println("DEBUG: copyNewContacts():");
         JSONUtil.prettyPrint(newContacts);
@@ -114,8 +114,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyUpdatedContacts () {
         String storeKey = "copyUpdatedContacts.lastModified";
-        //JSONArray updatedContacts = source.getUpdatedContacts(LukaStore.get(storeKey, jobId));
-        JSONArray updatedContacts = source.getUpdatedContacts(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray updatedContacts = source.getUpdatedContacts(updateTime);
 
         System.out.println("DEBUG: copyUpdatedContacts():");
         JSONUtil.prettyPrint(updatedContacts);
@@ -130,8 +130,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyContactRelations () {
         String storeKey = "copyContactRelations.lastModified";
-        //JSONArray newContactRelations = source.getNewContactRelations(LukaStore.get(storeKey, jobId));
-        JSONArray newContactRelations = source.getNewContactRelations(Lukasync.UPDATE_TIME);
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray newContactRelations = source.getNewContactRelations(updateTime);
 
         JSONUtil.prettyPrint(newContactRelations);
 
@@ -168,8 +168,8 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
     private void copyNewTransactions () {
         String storeKey = "copyNewTransactions.lastModified";
-        //JSONArray saleLines = source.getNewSales(LukaStore.get(storeKey, jobId));
-        JSONArray saleLines = source.getNewSales(Lukasync.UPDATE_TIME); // TODO keep track of latest know transaction date
+        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        JSONArray saleLines = source.getNewSales(updateTime);
 
         StringBuilder sb = new StringBuilder();
         String modifiedDate = "";
@@ -214,6 +214,10 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
      * Privates
      */
 
+    /*
+     * This method does not bork out because it is ok for it to fail.
+     * The reason is that we don't want it to get stuck on faulty transaction-to-contact relations.
+     */
     private void createNoteForTransaction (StringBuilder sb, JSONObject currentSaleLine, String currentTransactionNo) {
         String soldAt = currentSaleLine.getString("sold_at");
         String headerString = "<span style=\"color: #080\">RECEIPT</span><br />\n" +
@@ -223,14 +227,17 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
         sb.insert(0, headerString);
 
-        int userId = 1;
         String customerNo = currentSaleLine.getString("customer_no");
         int contactId = destination.getContactIdByCustomerNo(customerNo);
+        int ownerId = destination.getOwnerIdByContactId(contactId);
 
-        if (contactId > -1) {
-            destination.createNote(userId, contactId, sb.toString(), soldAt);
-        } else {
+        if (contactId > -1 && ownerId > -1) {
+            destination.createNote(ownerId, contactId, sb.toString(), soldAt);
+        } else if (contactId < 0){
             System.err.println("createNoteForTransaction() couldn't match transaction with contact with customerNo " + customerNo + "!");
+            System.err.println(sb.toString());
+        } else if (ownerId < 0){
+            System.err.println("createNoteForTransaction() couldn't fetch owner for contact with id " + contactId + "!");
             System.err.println(sb.toString());
         }
 

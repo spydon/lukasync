@@ -60,17 +60,15 @@ public class Rest {
                 throw new IllegalArgumentException(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a JSON error.", e);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a connection error.", e);
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("jsonGet called with bad url.", e);
         }
-
-        return null;
     }
 
     public static JSONObject jsonPost(String urlStr, HashMap<String, String> headers) {
@@ -126,17 +124,15 @@ public class Rest {
                 throw new IllegalArgumentException(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a JSON error.", e);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a connection error.", e);
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("jsonPost called with bad url.", e);
         }
-
-        return null;
     }
 
     public static JSONObject jsonPut(String urlStr, HashMap<String, String> headers, JSONObject payload) {
@@ -196,17 +192,15 @@ public class Rest {
                 throw new IllegalArgumentException(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a JSON error.", e);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("Encountered a connection error.", e);
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalStateException("jsonPut called with bad url.", e);
         }
-
-        return null;
     }
 
     /*

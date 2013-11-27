@@ -17,7 +17,6 @@ public class SyncTask implements Runnable {
         try {
             //throw new IllegalStateException("U DONE GOOFED");
 
-            // TODO consider implementing minimum wait time
             iteration++;
             System.out.println(
                     "\nRunning synchronisation, this is run number " + iteration +
