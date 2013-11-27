@@ -52,11 +52,6 @@ public class MagentoClient extends ServiceClient {
     }
 
     public int createCustomer (JSONObject customer) {
-        if (Lukasync.PRINT_DEBUG) {
-            System.out.println("\nDEBUG: MagentoClient creating customer:");
-            JSONUtil.prettyPrint(customer);
-        }
-
         return createCustomer(
                 1,
                 1,
@@ -162,7 +157,7 @@ public class MagentoClient extends ServiceClient {
 
             for (SalesOrderListEntity e : salesOrderListEntities) {
                 String operatorName = e.getCustomerEmail().split("@")[0];
-                String gross = e.getGrandTotal();// getTotalInvoiced(); // TODO is this what we want?
+                String gross = e.getGrandTotal();
                 String createdAt = e.getCreatedAt();
 
                 JSONObject eJSON = new JSONObject();

@@ -17,32 +17,37 @@ public class Synchronizer {
         JSONObject jobs = conf.getJSONObject("jobs");
 
         for(Object objKey : conf.keySet()) {
-            String key = objKey.toString();
+            try {
+                String key = objKey.toString();
 
-            if (key.equalsIgnoreCase("jobs")) {
-                continue;
-            }
+                if (key.equalsIgnoreCase("jobs")) {
+                    continue;
+                }
 
-            JSONObject sourceLine = conf.getJSONObject(key);
-            JSONArray destinations = sourceLine.getJSONArray("destinations");
+                JSONObject sourceLine = conf.getJSONObject(key);
+                JSONArray destinations = sourceLine.getJSONArray("destinations");
 
-            switch(sourceLine.getString("type")) {
-                case "evoposhq":
-                    syncFromEvoposHQ(conf, jobs, sourceLine, destinations);
-                    break;
+                switch (sourceLine.getString("type")) {
+                    case "evoposhq":
+                        syncFromEvoposHQ(conf, jobs, sourceLine, destinations);
+                        break;
 
-                case "magento":
-                    syncFromMagento(conf, jobs, sourceLine, destinations);
-                    break;
+                    case "magento":
+                        syncFromMagento(conf, jobs, sourceLine, destinations);
+                        break;
 
-                case "zurmo":
-                    if (destinations.length() > 0) {
-                        throw new IllegalStateException("Zurmo services may not have destinations");
-                    }
+                    case "zurmo":
+                        if (destinations.length() > 0) {
+                            throw new IllegalStateException("Zurmo services may not have destinations");
+                        }
 
-                    break;
-                default:
-                    throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("type") + "\nin file " + Lukasync.DB);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Faulty service: " + sourceLine.getString("type") + "\nin file " + Lukasync.DB);
+                }
+            } catch (Throwable t) {
+                System.err.println("ERROR: doSync loop iteration crashed, stacktrace below:");
+                t.printStackTrace();
             }
         }
     }

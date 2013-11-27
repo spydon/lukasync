@@ -12,7 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ZurmoClient extends ServiceClient{
-    private static String DEFAULT_USER_COUNTRY = "Australia"; // TODO remove this...?
+    //private static String DEFAULT_USER_COUNTRY = "Australia"; // TO ... DO(?) remove this...?
 
     private String sessionId;
     private String token;
@@ -101,8 +101,9 @@ public class ZurmoClient extends ServiceClient{
                 user.getString("mobilePhone"),
                 user.getString("emailAddress"),
                 user.getString("city"),
-                user.getString("postalCode"),
-                DEFAULT_USER_COUNTRY
+                user.getString("postalCode")
+                //,
+                //DEFAULT_USER_COUNTRY
         );
     }
 
@@ -117,8 +118,10 @@ public class ZurmoClient extends ServiceClient{
             String emailAddress,
 
             String city,
-            String postalCode,
-            String country) {
+            String postalCode
+            //,
+            //String country
+    ) {
         JSONObject primaryEmail = new JSONObject();
         primaryEmail.put("emailAddress", emailAddress);
         primaryEmail.put("optOut", "0");
@@ -126,7 +129,7 @@ public class ZurmoClient extends ServiceClient{
         JSONObject primaryAddress = new JSONObject();
         primaryAddress.put("city", city);
         primaryAddress.put("postalCode", postalCode);
-        primaryAddress.put("country", country);
+        //primaryAddress.put("country", country);
 
         JSONObject data = new JSONObject();
         data.put("primaryEmail", primaryEmail);
@@ -240,6 +243,7 @@ public class ZurmoClient extends ServiceClient{
 
         }
     }
+
     public boolean createContact(JSONObject contact) {
         JSONObject primaryEmail = contact.getJSONObject("primaryEmail");
         JSONObject primaryAddress = contact.getJSONObject("primaryAddress");
@@ -297,7 +301,7 @@ public class ZurmoClient extends ServiceClient{
         owner.put("id", ownerId);
 
         JSONObject status = new JSONObject();
-        status.put("id", 7);
+        status.put("id", 6);
 
         JSONObject data = new JSONObject();
         data.put("primaryEmail", primaryEmail);
@@ -326,7 +330,7 @@ public class ZurmoClient extends ServiceClient{
     ) {
         return updateContact(
                 contactId,
-                contact.getInt("ownerId"), // TODO what is thissss?!
+                contact.getInt("ownerId"),
                 contact.getString("firstName"),
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
@@ -414,15 +418,27 @@ public class ZurmoClient extends ServiceClient{
         return booleanResponse(response);
     }
 
-    public boolean createNote (JSONObject note) {
-        return createNote(
-                note.getInt("userId"),
-                note.getInt("contactId"),
-                note.getString("description"),
-                note.getString("date")
-        );
+    public int getOwnerIdByContactId (int contactId) {
+        HashMap<String, String> headers = getDefaultHeaders();
+
+        JSONObject response = Rest.jsonGet(baseUrl + "/contacts/contact/api/read/" + contactId, headers);
+        if (response == null) {
+
+            // this crash is ok because it means that we couldn't even reach the API, so we don't know anything.
+            throw new IllegalStateException("Response from Rest was null.");
+
+        } else if (!response.getString("status").equals("SUCCESS")) {
+
+            return -1;
+
+        } else {
+
+            return response.getJSONObject("data").getJSONObject("owner").getInt("id");
+
+        }
     }
-    public boolean createNote(int userId, int contactId, String description, String dateUnsafe) {
+
+    public boolean createNote(int ownerId, int contactId, String description, String dateUnsafe) {
         HashMap<String, String> headers = getDefaultHeaders();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
@@ -446,7 +462,7 @@ public class ZurmoClient extends ServiceClient{
         modelRelations.put("activityItems", contacts);
 
         JSONObject owner = new JSONObject();
-        owner.put("id", userId);
+        owner.put("id", ownerId);
 
         JSONObject data = new JSONObject();
         data.put("description", description);
