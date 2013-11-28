@@ -84,7 +84,7 @@ public class EvoposClient extends ServiceClient {
             else
                 userQuery.setWhere("DATEADD(ss, 5, date_signed) < lsemployees.modified_date");
 
-            userQuery.appendWhere("lsemployees.modified_date>" + "" + updateTime + "");
+            userQuery.appendWhere("lsemployees.modified_date>" + "'" + updateTime + "'");
             System.out.println("getUsers(), userQuery: " + userQuery.getQuery());
             ps = conn.prepareStatement(userQuery.getQuery());
 

@@ -1,29 +1,28 @@
 package lukasync.client;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.sun.xml.internal.ws.client.BindingProviderProperties;
 import lukasync.Lukasync;
-import lukasync.magentoclient.AssociativeArray;
-import lukasync.magentoclient.AssociativeEntity;
-import lukasync.magentoclient.ComplexFilter;
-import lukasync.magentoclient.ComplexFilterArray;
-import lukasync.magentoclient.CustomerCustomerCreateRequestParam;
-import lukasync.magentoclient.CustomerCustomerCreateResponseParam;
-import lukasync.magentoclient.CustomerCustomerEntityToCreate;
-import lukasync.magentoclient.Filters;
-import lukasync.magentoclient.LoginParam;
-import lukasync.magentoclient.LoginResponseParam;
-import lukasync.magentoclient.MageApiModelServerWsiHandlerPortType;
-import lukasync.magentoclient.MagentoService;
-import lukasync.magentoclient.ObjectFactory;
-import lukasync.magentoclient.SalesOrderListEntity;
-import lukasync.magentoclient.SalesOrderListEntityArray;
-import lukasync.magentoclient.SalesOrderListRequestParam;
-import lukasync.magentoclient.SalesOrderListResponseParam;
+import lukasync.magentoclient.*;
 import lukasync.util.JSONUtil;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.Binding;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 public class MagentoClient extends ServiceClient {
     private MagentoService magentoService;
@@ -38,6 +37,18 @@ public class MagentoClient extends ServiceClient {
     protected void init() {
         magentoService = new MagentoService();
         port = magentoService.getMageApiModelServerWsiHandlerPort();
+
+        BindingProvider bpPort = (BindingProvider) port;
+        Map<String,Object> requestContext = bpPort.getRequestContext();
+        requestContext.put(BindingProviderProperties.CONNECT_TIMEOUT, 115000);
+        requestContext.put(BindingProviderProperties.REQUEST_TIMEOUT, 115000);
+
+        if (true) {
+            Binding binding = bpPort.getBinding();
+            List<Handler> handlerChain = binding.getHandlerChain();
+            handlerChain.add(new LogMessageHandler());
+            binding.setHandlerChain(handlerChain);
+        }
 
         LoginParam loginRequestParam = new LoginParam();
         loginRequestParam.setUsername(username);
@@ -172,4 +183,56 @@ public class MagentoClient extends ServiceClient {
         return result;
     }
 
+    private class LogMessageHandler implements SOAPHandler<SOAPMessageContext> {
+        @Override
+        public boolean handleMessage (SOAPMessageContext context) {
+            SOAPMessage msg = context.getMessage(); //Line 1
+            try {
+                System.out.println("MESSAGE!");
+                msg.writeTo(System.out);  //Line 3
+                System.out.println();
+            } catch (SOAPException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+
+            return true;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public boolean handleFault (SOAPMessageContext context) {
+            SOAPMessage msg = context.getMessage(); //Line 1
+            try {
+                System.out.println("FAULT!");
+                msg.writeTo(System.out);  //Line 3
+                System.out.println();
+            } catch (SOAPException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+            return true;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public void close (MessageContext context) {
+            System.out.println("CLOSE!");
+            Set<Map.Entry<String, Object>> ctxEntries = context.entrySet();
+            Iterator<Map.Entry<String, Object>> iter = ctxEntries.iterator();
+            while (iter.hasNext()) {
+                Map.Entry<String, Object> entry = iter.next();
+                System.out.println("Entry: " + entry.toString());
+            }
+        }
+
+        @Override
+        public Set<QName> getHeaders () {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
 }
