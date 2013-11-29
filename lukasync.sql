@@ -31,8 +31,18 @@ CREATE TABLE `registry` (
   UNIQUE KEY `key_service_flow_id_index` (`key`,`service_flow_id`),
   KEY `fk_service_flow` (`service_flow_id`),
   CONSTRAINT `fk_service_flow` FOREIGN KEY (`service_flow_id`) REFERENCES `service` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `registry`
+--
+
+LOCK TABLES `registry` WRITE;
+/*!40000 ALTER TABLE `registry` DISABLE KEYS */;
+INSERT INTO `registry` VALUES (47,'copyNewUsers.lastModified',2,'2013-11-28 15:27:06.32'),(48,'copyNewContacts.lastModified',2,'2013-11-25 16:45:14.8'),(49,'copyContactRelations.lastModified',2,'2013-11-13 10:58:49.86'),(50,'copyNewUsers.lastModified',3,'2013-11-28 15:27:06.32'),(51,'copyNewTransactions.lastModified',2,'2013-11-13 10:58:49.86'),(52,'copyUpdatedContacts.lastModified',2,'2013-11-28 14:39:00.96'),(53,'copyUpdatedUsers.lastModified',2,'2013-11-28 15:59:13.793'),(54,'copyNewSales.latestCreatedAt',4,'2013-11-29 01:31:21');
+/*!40000 ALTER TABLE `registry` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `service`
@@ -78,7 +88,9 @@ CREATE TABLE `service_flow` (
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `source` (`source`),
-  KEY `destination` (`destination`)
+  KEY `destination` (`destination`),
+  CONSTRAINT `fk_service_flow_destination` FOREIGN KEY (`destination`) REFERENCES `service` (`id`),
+  CONSTRAINT `fk_service_flow_source` FOREIGN KEY (`source`) REFERENCES `service` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -88,7 +100,7 @@ CREATE TABLE `service_flow` (
 
 LOCK TABLES `service_flow` WRITE;
 /*!40000 ALTER TABLE `service_flow` DISABLE KEYS */;
-INSERT INTO `service_flow` VALUES (1,2,1,1),(2,3,1,1),(3,3,4,1),(4,4,3,0);
+INSERT INTO `service_flow` VALUES (1,2,1,1),(2,3,1,1),(3,3,4,1),(4,4,3,1);
 /*!40000 ALTER TABLE `service_flow` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -101,4 +113,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-11-27 10:47:47
+-- Dump completed on 2013-11-29 11:59:50

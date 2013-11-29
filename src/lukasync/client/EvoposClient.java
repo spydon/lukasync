@@ -15,12 +15,19 @@ import org.json.JSONObject;
 
 public class EvoposClient extends ServiceClient {
 
+    private static final String SALES_QUERY_WHERE_BASE = "Sales_Transactions_Lines.gross >= 0 " +
+            "AND Sales_Transactions_Header.sales_type = 'INVOICE' " +
+            "AND part_no <> '.GADJUSTMENT' " +
+            "AND soldto_id > 10 " +
+            "AND LEN(customer_no) > 11";
+
     private final QueryBuilder contactQuery, userQuery, salesQuery, contactRelationQuery;
 
     public EvoposClient(JSONObject conf) {
         super(conf);
         this.userQuery = new QueryBuilder(
-                "short_name as username, pass_code, first_name, last_name, mobile, email, home_address, postcode, date_signed, LSEmployees.modified_date",
+                "short_name as username, pass_code, first_name, last_name, mobile, email, home_address, postcode, " +
+                        "date_signed, LSEmployees.modified_date",
                 "Operators INNER JOIN LSEmployees ON LSEmployees.operator_id = Operators.id",
                 "operators.id>0",
                 "",
@@ -31,7 +38,7 @@ public class EvoposClient extends ServiceClient {
                 + "formatted_address, country, customer_No, send_mail, staff_id, date_created, Contacts_Persons.modified_date",
                 "Contacts_Persons "
                 + "INNER JOIN Contacts ON Contacts.id = Contacts_Persons.contact_id",
-                "LEN(Customer_No) > 11", // XXX: Keep in sync with the contactRelationQuery length
+                "",
                 "",
                 "Contacts_Persons.modified_date asc"
                 );
@@ -44,7 +51,7 @@ public class EvoposClient extends ServiceClient {
                 + "INNER JOIN Contacts ON SoldTo_ID = Contacts.ID WHERE SoldTo_ID > 10 "
                 + "GROUP BY SoldTo_ID, Customer_No) X ON H.SoldTo_ID = X.SoldTo_ID AND H.Modified_Date = X.first_occurence) P "
                 + "INNER JOIN Operators ON Operator_ID = Operators.ID",
-                "LEN(Customer_No) > 11", // XXX: Keep in sync with the contactQuery length
+                "",
                 "",
                 "");
         this.salesQuery = new QueryBuilder(
@@ -53,11 +60,7 @@ public class EvoposClient extends ServiceClient {
                 "Sales_Transactions_Lines "
                 + "INNER JOIN Sales_Transactions_Header ON Sales_Transactions_Lines.transaction_no = Sales_Transactions_Header.transaction_no "
                 + "INNER JOIN Contacts ON soldto_id = Contacts.id",
-                "Sales_Transactions_Lines.gross >= 0 " +
-                        "AND Sales_Transactions_Header.sales_type = 'INVOICE' " +
-                        "AND part_no <> '.GADJUSTMENT' " +
-                        "AND soldto_id > 10 " +
-                        "AND LEN(customer_no) > 11",
+                SALES_QUERY_WHERE_BASE,
                 "",
                 "Sales_Transactions_Header.modified_date, Sales_Transactions_Lines.transaction_no");
     }
@@ -127,12 +130,14 @@ public class EvoposClient extends ServiceClient {
             Connection conn = getConnection();
             PreparedStatement ps;
 
+            contactQuery.setWhere("LEN(customer_no) > 11"); // XXX: Keep in sync with the contactRelationQuery length
+
             if(isNew)
                 contactQuery.appendWhere("DATEADD(dd, 2, date_created) > Contacts_Persons.modified_date");
             else
                 contactQuery.appendWhere("DATEADD(dd, 2, date_created) < Contacts_Persons.modified_date");
 
-            updateTime = (updateTime == null || updateTime.equals("0")) ? "1990-12-31" : updateTime;
+            updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
             contactQuery.appendWhere("Contacts_Persons.modified_date>" + "'" + updateTime + "'");
             System.out.println("DEBUG: contactQuery - " + contactQuery.getQuery());
             ps = conn.prepareStatement(contactQuery.getQuery());
@@ -153,7 +158,7 @@ public class EvoposClient extends ServiceClient {
 
                 JSONObject primaryAddress = new JSONObject();
                 JSONUtil.putString(primaryAddress, "street1", rs.getString("address_1"));
-                JSONUtil.putString(primaryAddress, "street2", rs.getString("address_2"));
+                JSONUtil.putString(primaryAddress, "street2", rs.getString("formatted_address"));
                 JSONUtil.putString(primaryAddress, "city", rs.getString("town"));
                 JSONUtil.putString(primaryAddress, "state", rs.getString("state"));
                 JSONUtil.putString(primaryAddress, "postalCode", rs.getString("code"));
@@ -180,6 +185,8 @@ public class EvoposClient extends ServiceClient {
         try {
             Connection conn = getConnection();
             PreparedStatement ps;
+
+            contactRelationQuery.setWhere("LEN(customer_no) > 11"); // XXX: Keep in sync with the contactQuery length
 
             updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
             contactRelationQuery.appendWhere("P.modified_date>" + "'" + updateTime + "'");
@@ -211,6 +218,7 @@ public class EvoposClient extends ServiceClient {
             PreparedStatement ps;
 
             updateTime = updateTime.equals("0") ? "1990-12-31" : updateTime;
+            salesQuery.setWhere(SALES_QUERY_WHERE_BASE);
             salesQuery.appendWhere("Sales_Transactions_Header.modified_date>" + "'" + updateTime + "'");
             System.out.println("getNewSales(), salesQuery: " + salesQuery.getQuery());
             ps = conn.prepareStatement(salesQuery.getQuery());

@@ -43,7 +43,8 @@ public class MagentoClient extends ServiceClient {
         requestContext.put(BindingProviderProperties.CONNECT_TIMEOUT, 115000);
         requestContext.put(BindingProviderProperties.REQUEST_TIMEOUT, 115000);
 
-        if (true) {
+        // do you want lol-debugging?
+        if (false) {
             Binding binding = bpPort.getBinding();
             List<Handler> handlerChain = binding.getHandlerChain();
             handlerChain.add(new LogMessageHandler());

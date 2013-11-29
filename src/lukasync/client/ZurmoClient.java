@@ -328,28 +328,28 @@ public class ZurmoClient extends ServiceClient{
             int contactId,
             JSONObject contact
     ) {
+        JSONObject primaryEmail = contact.getJSONObject("primaryEmail");
+        JSONObject primaryAddress = contact.getJSONObject("primaryAddress");
+
         return updateContact(
                 contactId,
-                contact.getInt("ownerId"),
                 contact.getString("firstName"),
                 contact.getString("lastName"),
                 contact.getString("mobilePhone"),
                 contact.getString("department"),
                 contact.getString("customerNo"),
-                contact.getString("emailAddress"),
-                contact.getString("optOut"),
-                contact.getString("street1"),
-                contact.getString("street2"),
-                contact.getString("city"),
-                contact.getString("postalCode"),
-                contact.getString("country")
-                );
+                primaryEmail.getString("emailAddress"),
+                primaryEmail.getString("optOut"),
+                primaryAddress.getString("street1"),
+                primaryAddress.getString("street2"),
+                primaryAddress.getString("city"),
+                primaryAddress.getString("postalCode"),
+                primaryAddress.getString("country")
+        );
     }
 
     public boolean updateContact(
             int contactId,
-
-            Integer ownerId,
 
             String firstName,
             String lastName,
@@ -386,10 +386,6 @@ public class ZurmoClient extends ServiceClient{
         data.put("mobilePhone", normalizePhone(mobilePhone));
         data.put("department", department);
         data.put("officePhone", customerNo);
-        JSONObject owner = new JSONObject();
-
-        owner.put("id", ownerId);
-        data.put("owner", owner);
 
         JSONObject payload = new JSONObject();
         payload.put("data", data);

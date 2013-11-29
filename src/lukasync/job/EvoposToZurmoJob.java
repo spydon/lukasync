@@ -11,6 +11,8 @@ import org.json.JSONObject;
 
 public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
+    private static final String COPY_NEW_TRANSACTIONS_STORE_KEY = "copyNewTransactions.lastModified";
+
     public EvoposToZurmoJob(int jobId, EvoposClient source, ZurmoClient destination) {
         super(jobId, source, destination);
     }
@@ -122,7 +124,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
         for (int i = 0; i < updatedContacts.length(); i++) {
             JSONObject updatedContact = updatedContacts.getJSONObject(i);
-            int contactId = destination.getContactIdByCustomerNo(updatedContact.getString("customer_no"));
+            int contactId = destination.getContactIdByCustomerNo(updatedContact.getString("customerNo"));
             destination.updateContact(contactId, updatedContact);
             LukaStore.put(storeKey, jobId, updatedContact.getString("modified_at"));
         }
@@ -167,8 +169,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
     }
 
     private void copyNewTransactions () {
-        String storeKey = "copyNewTransactions.lastModified";
-        String updateTime = LukaStore.get(storeKey, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
+        String updateTime = LukaStore.get(COPY_NEW_TRANSACTIONS_STORE_KEY, jobId, Lukasync.INITIAL_IMPORT_UPDATE_TIME);
         JSONArray saleLines = source.getNewSales(updateTime);
 
         StringBuilder sb = new StringBuilder();
@@ -179,7 +180,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
             System.out.println("DEBUG: currentSaleLine: " + currentSaleLine.toString());
 
             String candidateDate = currentSaleLine.getString("modified_at");
-            modifiedDate = (modifiedDate.compareTo(candidateDate) > -1) ? candidateDate : modifiedDate;
+            modifiedDate = (candidateDate.compareTo(modifiedDate) > -1) ? candidateDate : modifiedDate;
 
             String qty = currentSaleLine.getString("qty");
             String partNo = currentSaleLine.getString("part_no");
@@ -201,11 +202,10 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
                 String nextTransactionNo = nextSaleLine.getString("transaction_no");
 
                 if (!currentTransactionNo.equals(nextTransactionNo)) {
-                    createNoteForTransaction(sb, currentSaleLine, currentTransactionNo);
-                    LukaStore.put(storeKey, jobId, modifiedDate);
+                    createNoteForTransaction(sb, currentSaleLine, currentTransactionNo, modifiedDate);
                 }
             } else {
-                createNoteForTransaction(sb, currentSaleLine, currentTransactionNo);
+                createNoteForTransaction(sb, currentSaleLine, currentTransactionNo, modifiedDate);
             }
         }
     }
@@ -218,7 +218,10 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
      * This method does not bork out because it is ok for it to fail.
      * The reason is that we don't want it to get stuck on faulty transaction-to-contact relations.
      */
-    private void createNoteForTransaction (StringBuilder sb, JSONObject currentSaleLine, String currentTransactionNo) {
+    private void createNoteForTransaction (StringBuilder sb,
+                                           JSONObject currentSaleLine,
+                                           String currentTransactionNo,
+                                           String modifiedDate) {
         String soldAt = currentSaleLine.getString("sold_at");
         String headerString = "<span style=\"color: #080\">RECEIPT</span><br />\n" +
                 "Transaction No: " + currentTransactionNo + "<br />\n" +
@@ -233,6 +236,7 @@ public class EvoposToZurmoJob extends Job<EvoposClient, ZurmoClient> {
 
         if (contactId > -1 && ownerId > -1) {
             destination.createNote(ownerId, contactId, sb.toString(), soldAt);
+            LukaStore.put(COPY_NEW_TRANSACTIONS_STORE_KEY, jobId, modifiedDate);
         } else if (contactId < 0){
             System.err.println("createNoteForTransaction() couldn't match transaction with contact with customerNo " + customerNo + "!");
             System.err.println(sb.toString());

@@ -54,10 +54,12 @@ public class MagentoToEvoposJob extends Job<MagentoClient, EvoposClient> {
 
         Collections.sort(saleList, saleComparator);
 
-        System.out.println("DEBUG: copyNewSales():");
-        JSONUtil.prettyPrint(newSales);
+        if (Lukasync.PRINT_DEBUG) {
+            System.out.println("DEBUG: copyNewSales():");
+            JSONUtil.prettyPrint(newSales);
+        }
 
-        for (JSONObject sale: saleList) {
+        for (JSONObject sale : saleList) {
             try {
                 destination.insertNewSale(sale);
                 LukaStore.put(storeKey, jobId, sale.getString("createdAt"));

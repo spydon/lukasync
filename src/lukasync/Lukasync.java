@@ -24,7 +24,7 @@ public class Lukasync {
     public static String PASS = "Daniel1985";
 
     public static long INITIAL_WAIT = 0;
-    public static long WAIT = 60000;
+    public static long WAIT = 3600000;
 
     public static void main(String[] args) {
         if (args.length > 0) {
