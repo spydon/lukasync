@@ -6,23 +6,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.xml.internal.ws.client.BindingProviderProperties;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
+
 import lukasync.Lukasync;
-import lukasync.magentoclient.*;
+import lukasync.magentoclient.AssociativeArray;
+import lukasync.magentoclient.AssociativeEntity;
+import lukasync.magentoclient.ComplexFilter;
+import lukasync.magentoclient.ComplexFilterArray;
+import lukasync.magentoclient.CustomerCustomerCreateRequestParam;
+import lukasync.magentoclient.CustomerCustomerCreateResponseParam;
+import lukasync.magentoclient.CustomerCustomerEntityToCreate;
+import lukasync.magentoclient.Filters;
+import lukasync.magentoclient.LoginParam;
+import lukasync.magentoclient.LoginResponseParam;
+import lukasync.magentoclient.MageApiModelServerWsiHandlerPortType;
+import lukasync.magentoclient.MagentoService;
+import lukasync.magentoclient.ObjectFactory;
+import lukasync.magentoclient.SalesOrderListEntity;
+import lukasync.magentoclient.SalesOrderListEntityArray;
+import lukasync.magentoclient.SalesOrderListRequestParam;
+import lukasync.magentoclient.SalesOrderListResponseParam;
 import lukasync.util.JSONUtil;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.Binding;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 public class MagentoClient extends ServiceClient {
     private MagentoService magentoService;
@@ -40,16 +53,16 @@ public class MagentoClient extends ServiceClient {
 
         BindingProvider bpPort = (BindingProvider) port;
         Map<String,Object> requestContext = bpPort.getRequestContext();
-        requestContext.put(BindingProviderProperties.CONNECT_TIMEOUT, 115000);
-        requestContext.put(BindingProviderProperties.REQUEST_TIMEOUT, 115000);
-
-        // do you want lol-debugging?
-        if (false) {
-            Binding binding = bpPort.getBinding();
-            List<Handler> handlerChain = binding.getHandlerChain();
-            handlerChain.add(new LogMessageHandler());
-            binding.setHandlerChain(handlerChain);
-        }
+//        requestContext.put(BindingProviderProperties.CONNECT_TIMEOUT, 115000);
+//        requestContext.put(BindingProviderProperties.REQUEST_TIMEOUT, 115000);
+//
+//        // do you want lol-debugging?
+//        if (false) {
+//            Binding binding = bpPort.getBinding();
+//            List<Handler> handlerChain = binding.getHandlerChain();
+//            handlerChain.add(new LogMessageHandler());
+//            binding.setHandlerChain(handlerChain);
+//        }
 
         LoginParam loginRequestParam = new LoginParam();
         loginRequestParam.setUsername(username);
