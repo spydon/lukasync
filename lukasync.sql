@@ -70,7 +70,7 @@ CREATE TABLE `service` (
 
 LOCK TABLES `service` WRITE;
 /*!40000 ALTER TABLE `service` DISABLE KEYS */;
-INSERT INTO `service` VALUES (1,'theinner','zurmo','rest','http://theinnercirclevip.com/app/index.php',NULL,'super','citylink'),(2,'jericho','evoposhq','jdbc:sqlserver','203.143.84.21','BBSMain','sa','bbs1955'),(3,'organi','evoposhq','jdbc:sqlserver','168.144.171.93','London_HQ','sa','bbs1955%E'),(4,'organiMagento','magento','soap','hardcoded',NULL,'lukasync','citylink1');
+INSERT INTO `service` VALUES (1,'theinner','zurmo','rest','http://theinnercirclevip.com/app/index.php',NULL,'super','citylink'),(2,'jericho','evoposhq','jdbc:sqlserver','203.143.84.21','BBSMain','sa','bbs1955'),(3,'organi','evoposhq','jdbc:sqlserver','168.144.171.93','London_HQ','sa','bbs1955%E'),(4,'organiMagento','magento','soap','hardcoded',NULL,'lukasync','');
 /*!40000 ALTER TABLE `service` ENABLE KEYS */;
 UNLOCK TABLES;
 
